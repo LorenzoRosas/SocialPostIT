@@ -1,1 +1,0 @@
-{ "name": "SocialPostIT", "version": "1.0.0", "description": "A social media posting application.", "main": "server.js", "scripts": { "start": "node server.js" }, "dependencies": { "express": "^4.17.1" }, "devDependencies": { "nodemon": "^2.0.7" }, "author": "Lorenzo Rosas", "license": "ISC" }
