@@ -1,0 +1,101 @@
+﻿<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            position: relative;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        .background-gif {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -2;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.493); 
+            z-index: -1;
+        }
+        .navbar {
+            background-color: rgba(2, 17, 76, 0.95) !important;
+        }
+        .login-card {
+            background-color: rgba(10, 10, 20, 0.9);
+            border: 2px solid #0dcaf0;
+            border-radius: 8px;
+        }
+        .form-control {
+            background-color: rgba(67, 67, 67, 0.8) !important;
+            color: #ffffff !important;
+            border: 1px solid #444;
+        }
+        .form-control:focus {
+            border-color: #0dcaf0;
+            box-shadow: 0 0 0 0.25rem rgba(13, 202, 240, 0.25);
+        }
+        .alert {
+            background-color: rgba(220, 53, 69, 0.9);
+            color: white;
+        }
+        a {
+            color: #0dcaf0 !important;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <img src="/background.gif" class="background-gif" alt="Background">
+    <div class="overlay"></div>
+
+    <nav class="navbar navbar-dark">
+        <div class="container">
+            <a class="navbar-brand text-white" href="/">Pagina Home</a>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="login-card card p-4">
+                    <div class="card-body">
+                        <h2 class="text-center mb-4 text-white">Accedi</h2>
+                        <% if (error) { %>
+                            <div class="alert alert-danger"><%= error %></div>
+                        <% } %>
+                        <form action="/login" method="POST">
+                            <div class="mb-3">
+                                <input type="text" name="username" class="form-control form-control-lg" placeholder="Username" required>
+                            </div>
+                            <div class="mb-3">
+                                <input type="password" name="password" class="form-control form-control-lg" placeholder="Password" required>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">Accedi</button>
+                            </div>
+                        </form>
+                        <p class="mt-3 text-center text-white">Sei nuovo? <a href="/signup">Registrati</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
