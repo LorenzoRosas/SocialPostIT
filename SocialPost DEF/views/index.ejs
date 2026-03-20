@@ -56,88 +56,93 @@
         .btn-chat:hover { background-color: #218838; border-color: #1e7e34; }
 
         /* Layout immagine + testo affiancati */
-        .post-media-row {
-            display: flex;
-            gap: 18px;
-            align-items: flex-start;
-        }
-        .post-img-wrap {
-            flex: 0 0 45%;
-            max-width: 45%;
-        }
+        .post-media-row { display: flex; gap: 18px; align-items: flex-start; }
+        .post-img-wrap  { flex: 0 0 45%; max-width: 45%; }
         .post-img-wrap img {
-            width: 100%;
-            max-height: 420px;
-            object-fit: cover;
-            border-radius: 6px;
-            border: 1px solid #0dcaf0;
-            display: block;
+            width: 100%; max-height: 420px;
+            object-fit: cover; border-radius: 6px;
+            border: 1px solid #0dcaf0; display: block;
         }
-        .post-text-wrap {
-            flex: 1 1 0;
-            min-width: 0;
-            word-break: break-word;
-        }
+        .post-text-wrap { flex: 1 1 0; min-width: 0; word-break: break-word; }
         @media (max-width: 640px) {
             .post-media-row { flex-direction: column; }
-            .post-img-wrap { flex: 0 0 100%; max-width: 100%; }
+            .post-img-wrap  { flex: 0 0 100%; max-width: 100%; }
         }
 
         /* Like */
         .btn-like {
-            background: none;
-            border: 1px solid #555;
-            color: #aaa;
-            border-radius: 20px;
-            padding: 4px 14px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s;
+            background: none; border: 1px solid #555;
+            color: #aaa; border-radius: 20px;
+            padding: 4px 14px; cursor: pointer;
+            font-size: 0.9rem; transition: all 0.2s;
         }
         .btn-like:hover:not(:disabled) { border-color: #e05252; color: #e05252; }
         .btn-like.liked { border-color: #e05252; color: #e05252; background-color: rgba(224,82,82,0.12); }
         .btn-like:disabled { opacity: 0.5; cursor: default; }
 
-        /* Commenti */
-        .comments-section {
-            border-top: 1px solid #333;
-            margin-top: 14px;
-            padding-top: 12px;
+        /* Share */
+        .share-wrap { position: relative; display: inline-block; }
+        .btn-share {
+            background: none; border: 1px solid #555;
+            color: #aaa; border-radius: 20px;
+            padding: 4px 14px; cursor: pointer;
+            font-size: 0.9rem; transition: all 0.2s;
         }
+        .btn-share:hover { border-color: #0dcaf0; color: #0dcaf0; }
+        .share-menu {
+            display: none;
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 0;
+            background: #1a1a2e;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 6px;
+            z-index: 200;
+            min-width: 170px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .share-menu.open { display: block; }
+        .share-menu a, .share-menu button {
+            display: flex; align-items: center; gap: 8px;
+            width: 100%; padding: 7px 12px;
+            color: #ddd; text-decoration: none;
+            background: none; border: none;
+            border-radius: 6px; font-size: 0.88rem;
+            cursor: pointer; text-align: left;
+            transition: background 0.15s;
+        }
+        .share-menu a:hover, .share-menu button:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .share-toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: #0dcaf0; color: #000; padding: 8px 22px;
+            border-radius: 20px; font-size: 0.88rem; font-weight: bold;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+            z-index: 9999;
+        }
+        .share-toast.show { opacity: 1; }
+
+        /* Commenti */
+        .comments-section { border-top: 1px solid #333; margin-top: 14px; padding-top: 12px; }
         .comment-item {
             background-color: rgba(255,255,255,0.05);
-            border-radius: 6px;
-            padding: 8px 12px;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
+            border-radius: 6px; padding: 8px 12px;
+            margin-bottom: 8px; font-size: 0.9rem;
         }
         .comment-author { color: #0dcaf0; font-weight: bold; margin-right: 6px; }
-        .comment-date { font-size: 0.75rem; color: #666; float: right; }
-        .comment-form-row {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-        }
+        .comment-date   { font-size: 0.75rem; color: #666; float: right; }
+        .comment-form-row { display: flex; gap: 8px; margin-top: 10px; }
         .comment-input {
-            flex: 1;
-            background-color: rgba(67,67,67,0.8);
-            color: #fff;
-            border: 1px solid #444;
-            border-radius: 6px;
-            padding: 6px 10px;
-            font-size: 0.88rem;
-            outline: none;
+            flex: 1; background-color: rgba(67,67,67,0.8);
+            color: #fff; border: 1px solid #444;
+            border-radius: 6px; padding: 6px 10px;
+            font-size: 0.88rem; outline: none;
         }
         .comment-input:focus { border-color: #0dcaf0; }
         .btn-comment {
-            background-color: #0d6efd;
-            border: none;
-            color: white;
-            border-radius: 6px;
-            padding: 6px 14px;
-            font-size: 0.88rem;
-            cursor: pointer;
-            white-space: nowrap;
+            background-color: #0d6efd; border: none; color: white;
+            border-radius: 6px; padding: 6px 14px;
+            font-size: 0.88rem; cursor: pointer; white-space: nowrap;
         }
         .btn-comment:hover { background-color: #0b5ed7; }
         .login-hint { font-size: 0.82rem; color: #888; margin-top: 8px; }
@@ -206,7 +211,7 @@
                             <small class="text-muted d-block mt-2">Pubblicato il <%= post.date %></small>
                         <% } %>
 
-                        <!-- Like -->
+                        <!-- Like + Condividi -->
                         <div class="mt-3 d-flex align-items-center gap-3">
                             <button
                                 class="btn-like <%= (currentUser && post.likes && post.likes.includes(currentUser)) ? 'liked' : '' %>"
@@ -215,6 +220,27 @@
                                 ❤️ <span class="like-count"><%= (post.likes || []).length %></span>
                             </button>
                             <small class="text-muted">💬 <%= (post.comments || []).length %> commenti</small>
+
+                            <!-- Pulsante condivisione -->
+                            <div class="share-wrap">
+                                <button class="btn-share" onclick="toggleShareMenu(event, this)">
+                                    🔗 Condividi
+                                </button>
+                                <div class="share-menu">
+                                    <a href="#" onclick="shareWhatsApp(event, '<%= encodeURIComponent(post.title) %>', '<%= encodeURIComponent((post.content||'').substring(0,120)) %>')">
+                                        <span>📱</span> WhatsApp
+                                    </a>
+                                    <a href="#" onclick="shareTelegram(event, '<%= encodeURIComponent(post.title) %>', '<%= encodeURIComponent((post.content||'').substring(0,120)) %>')">
+                                        <span>✈️</span> Telegram
+                                    </a>
+                                    <a href="#" onclick="shareTwitter(event, '<%= encodeURIComponent(post.title) %>', '<%= encodeURIComponent((post.content||'').substring(0,120)) %>')">
+                                        <span>🐦</span> X / Twitter
+                                    </a>
+                                    <button onclick="copyLink('<%= encodeURIComponent(post.title) %>', '<%= encodeURIComponent((post.content||'').substring(0,120)) %>')">
+                                        <span>📋</span> Copia link
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Commenti -->
@@ -256,8 +282,12 @@
         </div>
     </div>
 
+    <!-- Toast notifica "link copiato" -->
+    <div class="share-toast" id="shareToast">✅ Link copiato!</div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // ── Like ──────────────────────────────────────────────────────────────
         function toggleLike(postIndex, btn) {
             fetch('/like/' + postIndex, { method: 'POST' })
                 .then(r => r.json())
@@ -266,6 +296,71 @@
                     btn.querySelector('.like-count').textContent = data.count;
                     data.liked ? btn.classList.add('liked') : btn.classList.remove('liked');
                 });
+        }
+
+        // ── Share menu ────────────────────────────────────────────────────────
+        // Apre/chiude il menu condivisione; chiude tutti gli altri aperti
+        function toggleShareMenu(e, btn) {
+            e.stopPropagation();
+            const menu     = btn.nextElementSibling;
+            const isOpen   = menu.classList.contains('open');
+            closeAllShareMenus();
+            if (!isOpen) menu.classList.add('open');
+        }
+
+        function closeAllShareMenus() {
+            document.querySelectorAll('.share-menu.open').forEach(m => m.classList.remove('open'));
+        }
+
+        // Chiude i menu cliccando fuori
+        document.addEventListener('click', closeAllShareMenus);
+
+        // ── Costruisce il testo da condividere ────────────────────────────────
+        function buildShareText(titleEnc, snippetEnc) {
+            const title   = decodeURIComponent(titleEnc);
+            const snippet = decodeURIComponent(snippetEnc);
+            return `${title}${snippet ? ' — ' + snippet : ''}`;
+        }
+
+        // ── Funzioni di condivisione ──────────────────────────────────────────
+        function shareWhatsApp(e, titleEnc, snippetEnc) {
+            e.preventDefault();
+            closeAllShareMenus();
+            // Usa il Web Share API su mobile se disponibile, altrimenti link diretto
+            const text = buildShareText(titleEnc, snippetEnc) + '\n' + window.location.href;
+            if (navigator.share) {
+                navigator.share({ title: decodeURIComponent(titleEnc), text, url: window.location.href });
+            } else {
+                window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+            }
+        }
+
+        function shareTelegram(e, titleEnc, snippetEnc) {
+            e.preventDefault();
+            closeAllShareMenus();
+            const text = buildShareText(titleEnc, snippetEnc);
+            const url  = 'https://t.me/share/url?url=' + encodeURIComponent(window.location.href) + '&text=' + encodeURIComponent(text);
+            window.open(url, '_blank');
+        }
+
+        function shareTwitter(e, titleEnc, snippetEnc) {
+            e.preventDefault();
+            closeAllShareMenus();
+            const text = buildShareText(titleEnc, snippetEnc);
+            const url  = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(window.location.href);
+            window.open(url, '_blank');
+        }
+
+        function copyLink(titleEnc, snippetEnc) {
+            closeAllShareMenus();
+            const text = buildShareText(titleEnc, snippetEnc) + '\n' + window.location.href;
+            navigator.clipboard.writeText(text).then(() => showToast());
+        }
+
+        function showToast() {
+            const t = document.getElementById('shareToast');
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
         }
     </script>
 </body>
