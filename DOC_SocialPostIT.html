@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Social PostIt — Documentazione</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --h1:      #7eb8f7;
+    --h2:      #4eca8b;
+    --h3:      #38bdf8;
+    --bg:      #0f1117;
+    --bg2:     #161b27;
+    --sidebar: #131920;
+    --border:  #2a3040;
+    --code-bg: #0d1117;
+    --code-fg: #d4d4d4;
+    --tag-bg:  #162230;
+    --tag-col: #4eca8b;
+    --text:    #dde1ea;
+    --muted:   #7a8499;
+    --user-accent: #f59e0b;
+    --user-h2:     #fb923c;
+    --user-h3:     #fbbf24;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Montserrat', sans-serif; font-size: 16px; color: var(--text); display: flex; min-height: 100vh; background: var(--bg); }
+
+  /* ── SIDEBAR ── */
+  #sidebar { width: 300px; min-width: 300px; background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; transition: transform 0.3s; }
+  #sidebar-header { padding: 18px 20px 12px; border-bottom: 1px solid var(--border); background: linear-gradient(135deg, #0d1b2e 0%, #162035 100%); }
+  #sidebar-header h1 { font-size: 17px; color: var(--h1); font-weight: 700; letter-spacing: .5px; }
+  #sidebar-header p  { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+  /* View switcher tabs */
+  #view-tabs { display: flex; border-bottom: 1px solid var(--border); }
+  .view-tab { flex: 1; padding: 10px 6px; font-size: 12px; font-weight: 700; cursor: pointer; text-align: center; border: none; background: none; color: var(--muted); transition: all .2s; letter-spacing: .3px; }
+  .view-tab.active-user  { color: var(--user-accent); border-bottom: 2px solid var(--user-accent); }
+  .view-tab.active-arch  { color: var(--h2);          border-bottom: 2px solid var(--h2); }
+  .view-tab:hover { background: #1a2436; }
+
+  #search-box { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  #search-box input { width: 100%; padding: 7px 11px; border: 1px solid var(--border); border-radius: 6px; font-family: 'Montserrat', sans-serif; font-size: 13px; outline: none; background: var(--bg2); color: var(--text); }
+  #search-box input::placeholder { color: var(--muted); }
+  #search-box input:focus { border-color: var(--h2); }
+
+  #nav { overflow-y: auto; flex: 1; padding: 8px 0 20px; scrollbar-width: thin; scrollbar-color: #2a3040 transparent; }
+  .nav-section { margin-bottom: 2px; }
+  .nav-h1 { display: flex; align-items: center; justify-content: space-between; padding: 9px 18px; font-size: 13px; font-weight: 700; cursor: pointer; transition: background .15s; user-select: none; }
+  .nav-h1.user-style { color: var(--user-accent); }
+  .nav-h1.arch-style { color: var(--h1); }
+  .nav-h1:hover { background: #1a2436; }
+  .nav-h1.active { background: #162030; }
+  .nav-h1 .arrow { font-size: 10px; transition: transform .2s; color: var(--muted); }
+  .nav-h1.open .arrow { transform: rotate(90deg); }
+  .nav-sub { display: none; }
+  .nav-sub.open { display: block; }
+  .nav-h2 { display: block; padding: 6px 18px 6px 32px; font-size: 12.5px; color: var(--muted); cursor: pointer; transition: background .15s; text-decoration: none; }
+  .nav-h2:hover { background: #1a2436; color: var(--h2); }
+  .nav-h2.active-user { color: var(--user-accent); font-weight: 600; background: #1e1a0e; border-left: 3px solid var(--user-accent); padding-left: 29px; }
+  .nav-h2.active-arch { color: var(--h2);          font-weight: 600; background: #13261e;   border-left: 3px solid var(--h2);          padding-left: 29px; }
+
+  /* ── TOPBAR ── */
+  #topbar { position: fixed; top: 0; left: 300px; right: 0; height: 50px; background: rgba(15,17,23,.96); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 56px; z-index: 50; backdrop-filter: blur(8px); justify-content: space-between; }
+  #topbar .breadcrumb { font-size: 13px; color: var(--muted); }
+  #topbar .breadcrumb span { font-weight: 600; }
+  #topbar .breadcrumb span.u { color: var(--user-accent); }
+  #topbar .breadcrumb span.a { color: var(--h2); }
+  #back-top { font-size: 12px; color: var(--h2); cursor: pointer; border: 1px solid var(--h2); padding: 4px 13px; border-radius: 20px; text-decoration: none; font-weight: 600; transition: all .15s; }
+  #back-top:hover { background: var(--h2); color: #0f1117; }
+
+  /* ── MAIN ── */
+  #main { margin-left: 300px; flex: 1; max-width: 980px; padding: 78px 60px 100px; }
+
+  /* ── VIEW PANELS ── */
+  .view-panel { display: none; }
+  .view-panel.active { display: block; }
+
+  /* ── COVER ── */
+  .cover { text-align: center; padding: 60px 20px 48px; border-bottom: 1px solid var(--border); margin-bottom: 56px; }
+  .cover-title { font-size: 50px; font-weight: 700; color: var(--h1); letter-spacing: 2px; }
+  .cover-view-badge { display: inline-block; margin-top: 10px; padding: 4px 18px; border-radius: 20px; font-size: 13px; font-weight: 700; letter-spacing: .5px; }
+  .cover-view-badge.user { background: rgba(245,158,11,.15); color: var(--user-accent); border: 1px solid rgba(245,158,11,.4); }
+  .cover-view-badge.arch { background: rgba(78,202,139,.12); color: var(--h2); border: 1px solid rgba(78,202,139,.35); }
+  .cover-sub  { font-size: 17px; color: var(--h2); font-weight: 600; margin-top: 12px; }
+  .cover-author { font-size: 14px; color: var(--muted); margin-top: 5px; font-style: italic; }
+  .cover-tags { margin-top: 20px; display: flex; flex-wrap: wrap; justify-content: center; gap: 9px; }
+  .tag { background: var(--tag-bg); color: var(--tag-col); border: 1px solid #1e4030; border-radius: 20px; padding: 4px 15px; font-size: 12px; font-weight: 600; }
+  .cover-meta { margin-top: 18px; font-size: 13px; color: var(--muted); }
+
+  /* ── TOC ── */
+  .toc { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 26px 32px; margin-bottom: 56px; }
+  .toc h2 { font-size: 17px; font-weight: 700; margin-bottom: 14px; }
+  .toc.user h2 { color: var(--user-accent); }
+  .toc.arch h2 { color: var(--h1); }
+  .toc ol { padding-left: 20px; }
+  .toc > ol > li { margin-bottom: 6px; font-weight: 600; font-size: 14px; }
+  .toc > ol > li > a { text-decoration: none; }
+  .toc.user > ol > li > a { color: var(--user-accent); }
+  .toc.arch > ol > li > a { color: var(--h1); }
+  .toc > ol > li > a:hover { text-decoration: underline; }
+  .toc ol ol { padding-left: 18px; margin-top: 4px; }
+  .toc ol ol li { font-weight: 400; font-size: 13px; margin-bottom: 2px; }
+  .toc ol ol li a { color: var(--muted); text-decoration: none; }
+  .toc ol ol li a:hover { color: var(--h2); text-decoration: underline; }
+
+  /* ── SECTIONS ── */
+  .doc-section { margin-bottom: 60px; scroll-margin-top: 26px; }
+  h1.doc-h1 { font-size: 28px; font-weight: 700; border-bottom: 2px solid #1e2d45; padding-bottom: 10px; margin-bottom: 22px; }
+  h1.doc-h1.user { color: var(--user-accent); border-color: rgba(245,158,11,.3); }
+  h1.doc-h1.arch { color: var(--h1); }
+  h2.doc-h2 { font-size: 20px; font-weight: 700; margin: 28px 0 10px; }
+  h2.doc-h2.user { color: var(--user-h2); }
+  h2.doc-h2.arch { color: var(--h2); }
+  h3.doc-h3 { font-size: 16px; font-weight: 700; margin: 20px 0 8px; }
+  h3.doc-h3.user { color: var(--user-h3); }
+  h3.doc-h3.arch { color: var(--h3); }
+  p.doc-p { line-height: 1.8; color: var(--text); margin-bottom: 11px; }
+  ul.doc-ul { padding-left: 22px; margin-bottom: 11px; }
+  ul.doc-ul li { line-height: 1.75; color: var(--text); margin-bottom: 5px; list-style-type: disc; }
+  ol.doc-ol { padding-left: 22px; margin-bottom: 11px; }
+  ol.doc-ol li { line-height: 1.75; color: var(--text); margin-bottom: 5px; }
+
+  /* ── CALLOUT BOXES ── */
+  .callout { border-radius: 8px; padding: 14px 18px; margin: 14px 0; border-left: 4px solid; }
+  .callout.tip   { background: rgba(78,202,139,.08); border-color: var(--h2); }
+  .callout.warn  { background: rgba(251,191,36,.08); border-color: #fbbf24; }
+  .callout.info  { background: rgba(56,189,248,.08); border-color: var(--h3); }
+  .callout p { margin: 0; line-height: 1.7; }
+  .callout-label { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+  .callout.tip  .callout-label { color: var(--h2); }
+  .callout.warn .callout-label { color: #fbbf24; }
+  .callout.info .callout-label { color: var(--h3); }
+
+  /* ── STEP BOXES ── */
+  .steps { counter-reset: step; margin: 12px 0; }
+  .step { display: flex; gap: 16px; margin-bottom: 14px; align-items: flex-start; }
+  .step-num { counter-increment: step; content: counter(step); min-width: 32px; height: 32px; border-radius: 50%; background: var(--h2); color: #0f1117; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+  .step-num::before { content: counter(step); }
+  .step-body { padding-top: 5px; }
+  .step-body strong { color: var(--text); display: block; margin-bottom: 3px; }
+  .step-body p { color: var(--muted); font-size: 14px; margin: 0; line-height: 1.6; }
+
+  /* ── CODE ── */
+  .doc-code-block { background: var(--code-bg); color: var(--code-fg); font-family: 'Fira Code', monospace; font-size: 13.5px; border-radius: 10px; padding: 15px 20px; margin: 10px 0 14px; overflow-x: auto; line-height: 1.65; white-space: pre; border: 1px solid var(--border); }
+  code { font-family: 'Fira Code', monospace; background: #1a2436; color: var(--h2); padding: 2px 6px; border-radius: 4px; font-size: 13.5px; }
+
+  /* ── CODE TABLE ── */
+  .code-table-wrap { overflow-x: auto; margin: 12px 0 22px; border-radius: 10px; border: 1px solid var(--border); }
+  table.code-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  table.code-table thead tr { background: #0d1b2e; }
+  table.code-table thead th { padding: 11px 13px; text-align: left; font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 13px; color: var(--h1); border-bottom: 2px solid var(--border); }
+  table.code-table tbody tr:nth-child(even) td:nth-child(1),
+  table.code-table tbody tr:nth-child(even) td:nth-child(2) { background: #0f141e; }
+  table.code-table tbody tr td:first-child { background: #0c1016; color: #4a5568; font-family: 'Fira Code', monospace; text-align: right; padding: 5px 10px; width: 48px; min-width: 48px; user-select: none; border-right: 1px solid var(--border); font-size: 12px; }
+  table.code-table tbody tr td:nth-child(2) { background: var(--code-bg); color: var(--code-fg); font-family: 'Fira Code', monospace; font-size: 12.5px; padding: 5px 13px; width: 45%; border-right: 1px solid var(--border); white-space: nowrap; }
+  table.code-table tbody tr td:nth-child(3) { padding: 5px 13px; color: #b0bac8; font-size: 13.5px; line-height: 1.55; background: var(--bg2); }
+  table.code-table tbody tr:hover td { filter: brightness(1.1); }
+
+  /* ── FEATURE CARDS (user guide) ── */
+  .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin: 16px 0; }
+  .feature-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 18px 16px; }
+  .feature-card .icon { font-size: 28px; margin-bottom: 8px; }
+  .feature-card h4 { font-size: 14px; font-weight: 700; color: var(--user-accent); margin-bottom: 6px; }
+  .feature-card p { font-size: 13px; color: var(--muted); line-height: 1.5; margin: 0; }
+
+  /* ── MARK / SEARCH ── */
+  mark { background: #854d0e; color: #fef08a; border-radius: 2px; }
+
+  /* ── HAMBURGER ── */
+  #hamburger { display: none; position: fixed; top: 10px; left: 10px; z-index: 200; background: var(--bg2); color: var(--h1); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; cursor: pointer; font-size: 18px; }
+  @media (max-width: 768px) {
+    #sidebar { transform: translateX(-100%); }
+    #sidebar.open { transform: translateX(0); }
+    #main { margin-left: 0; padding: 78px 20px 60px; }
+    #topbar { left: 0; padding: 0 20px; }
+    #hamburger { display: block; }
+  }
+</style>
+</head>
+<body>
+
+<button id="hamburger" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div id="sidebar-header">
+    <h1>Social PostIt</h1>
+    <p>Documentazione — Rosas Lorenzo</p>
+  </div>
+  <div id="view-tabs">
+    <button class="view-tab active-user" onclick="switchView('user', this)">👤 Guida Utente</button>
+    <button class="view-tab"             onclick="switchView('arch', this)">⚙️ Architettura</button>
+  </div>
+  <div id="search-box">
+    <input type="text" id="search-input" placeholder="🔍 Cerca nel documento..." oninput="searchDoc(this.value)">
+  </div>
+  <div id="nav"></div>
+</nav>
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="breadcrumb">Social PostIt &nbsp;/&nbsp; <span id="current-section" class="u">Guida Utente</span></div>
+  <a href="#" id="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">↑ Torna su</a>
+</div>
+
+<main id="main">
+
+<!-- ═══════════════════════════════════════════════════════════
+     VISTA: GUIDA UTENTE
+════════════════════════════════════════════════════════════ -->
+<div id="view-user" class="view-panel active">
+
+  <div class="cover">
+    <div class="cover-title">SOCIAL POST IT</div>
+    <div class="cover-view-badge user">👤 Guida Utente</div>
+    <div class="cover-sub">Come usare l'applicazione</div>
+    <div class="cover-author">Rosas Lorenzo — Anno scolastico 2025/2026</div>
+    <div class="cover-tags">
+      <span class="tag">Registrazione</span><span class="tag">Post</span><span class="tag">Like</span>
+      <span class="tag">Commenti</span><span class="tag">Condivisione</span><span class="tag">Chat</span>
+    </div>
+  </div>
+
+  <div class="toc user">
+    <h2>📋 Contenuto della Guida</h2>
+    <ol>
+      <li><a href="#u1">Introduzione a Social PostIt</a></li>
+      <li><a href="#u2">Registrazione e Accesso</a>
+        <ol><li><a href="#u2-1">Creare un account</a></li><li><a href="#u2-2">Accedere</a></li><li><a href="#u2-3">Uscire</a></li></ol>
+      </li>
+      <li><a href="#u3">I Post</a>
+        <ol><li><a href="#u3-1">Leggere i post</a></li><li><a href="#u3-2">Pubblicare un post</a></li><li><a href="#u3-3">Aggiungere una foto</a></li></ol>
+      </li>
+      <li><a href="#u4">Interagire con i Post</a>
+        <ol><li><a href="#u4-1">Mettere like</a></li><li><a href="#u4-2">Commentare</a></li><li><a href="#u4-3">Condividere</a></li></ol>
+      </li>
+      <li><a href="#u5">Chat in Tempo Reale</a></li>
+      <li><a href="#u6">Domande Frequenti</a></li>
+    </ol>
+  </div>
+
+  <!-- U1 -->
+  <div class="doc-section" id="u1">
+    <h1 class="doc-h1 user">1. Introduzione a Social PostIt</h1>
+    <p class="doc-p"><strong>Social PostIt</strong> è una piattaforma social semplice che ti permette di pubblicare post, aggiungere foto, mettere like, commentare, condividere i contenuti e chattare in tempo reale con gli altri utenti.</p>
+    <div class="feature-grid">
+      <div class="feature-card"><div class="icon">📝</div><h4>Post</h4><p>Pubblica testi e foto visibili a tutti gli utenti.</p></div>
+      <div class="feature-card"><div class="icon">❤️</div><h4>Like</h4><p>Metti like ai post che ti piacciono con un solo click.</p></div>
+      <div class="feature-card"><div class="icon">💬</div><h4>Commenti</h4><p>Scrivi commenti sotto ogni post della community.</p></div>
+      <div class="feature-card"><div class="icon">🔗</div><h4>Condivisione</h4><p>Condividi i post su WhatsApp, Telegram, X e altro.</p></div>
+      <div class="feature-card"><div class="icon">⚡</div><h4>Chat Live</h4><p>Messaggia in tempo reale con tutti gli utenti online.</p></div>
+    </div>
+    <div class="callout info">
+      <div class="callout-label">Nota</div>
+      <p>Per leggere i post non è necessario avere un account. Per pubblicare, mettere like, commentare e chattare è invece richiesto il login.</p>
+    </div>
+  </div>
+
+  <!-- U2 -->
+  <div class="doc-section" id="u2">
+    <h1 class="doc-h1 user">2. Registrazione e Accesso</h1>
+    <h2 class="doc-h2 user" id="u2-1">2.1 Creare un account</h2>
+    <p class="doc-p">Per registrarti clicca su <strong>Registrati</strong> nella barra di navigazione in alto a destra.</p>
+    <div class="steps">
+      <div class="step"><div class="step-num"></div><div class="step-body"><strong>Scegli un username</strong><p>Deve essere unico — se è già in uso, il sistema te lo segnala con un messaggio di errore in rosso.</p></div></div>
+      <div class="step"><div class="step-num"></div><div class="step-body"><strong>Inserisci una password</strong><p>Scegli una password sicura che ricorderai.</p></div></div>
+      <div class="step"><div class="step-num"></div><div class="step-body"><strong>Clicca "Registrati"</strong><p>Verrai registrato e portato automaticamente alla homepage già loggato.</p></div></div>
+    </div>
+    <h2 class="doc-h2 user" id="u2-2">2.2 Accedere</h2>
+    <p class="doc-p">Clicca su <strong>Accedi</strong> nella barra di navigazione. Inserisci il tuo username e password e premi il pulsante. Se le credenziali sono errate, vedrai un messaggio di errore in rosso sotto il titolo.</p>
+    <h2 class="doc-h2 user" id="u2-3">2.3 Uscire</h2>
+    <p class="doc-p">Clicca su <strong>Esci</strong> nella barra di navigazione. Verrai disconnesso e riportato alla homepage come visitatore.</p>
+  </div>
+
+  <!-- U3 -->
+  <div class="doc-section" id="u3">
+    <h1 class="doc-h1 user">3. I Post</h1>
+    <h2 class="doc-h2 user" id="u3-1">3.1 Leggere i post</h2>
+    <p class="doc-p">Nella homepage sono visibili tutti i post pubblicati, ordinati dal più recente al più vecchio. Ogni post mostra il titolo, il badge con il nome dell'autore, il contenuto, la data di pubblicazione, il numero di like e i commenti.</p>
+    <h2 class="doc-h2 user" id="u3-2">3.2 Pubblicare un post</h2>
+    <p class="doc-p">Clicca su <strong>Nuovo Post</strong> nella navbar (visibile solo se sei loggato).</p>
+    <div class="steps">
+      <div class="step"><div class="step-num"></div><div class="step-body"><strong>Scrivi il titolo</strong><p>Un titolo breve e descrittivo per il tuo post.</p></div></div>
+      <div class="step"><div class="step-num"></div><div class="step-body"><strong>Scrivi il contenuto</strong><p>Il testo del tuo messaggio. Puoi scrivere quanto vuoi.</p></div></div>
+      <div class="step"><div class="step-num"></div><div class="step-body"><strong>Aggiungi una foto (facoltativo)</strong><p>Vedi la sezione 3.3 per i dettagli.</p></div></div>
+      <div class="step"><div class="step-num"></div><div class="step-body"><strong>Clicca "Pubblica"</strong><p>Il post apparirà subito in cima alla homepage.</p></div></div>
+    </div>
+    <h2 class="doc-h2 user" id="u3-3">3.3 Aggiungere una foto</h2>
+    <p class="doc-p">Nel form di creazione post trovi l'area tratteggiata <strong>"Clicca per allegare una foto (opzionale, max 5MB)"</strong>.</p>
+    <ul class="doc-ul">
+      <li>Clicca sull'area per aprire il selettore di file.</li>
+      <li>Scegli un'immagine dal tuo dispositivo (JPG, PNG, GIF, ecc.).</li>
+      <li>Vedrai subito un'anteprima dell'immagine selezionata.</li>
+      <li>Se l'immagine supera i 5MB, apparirà un errore e dovrai sceglierne un'altra.</li>
+      <li>Nel post pubblicato, la foto apparirà affiancata al testo su desktop e sopra il testo su mobile.</li>
+    </ul>
+    <div class="callout warn">
+      <div class="callout-label">Attenzione</div>
+      <p>Il limite massimo per le immagini è <strong>5MB</strong>. File più grandi vengono rifiutati automaticamente prima dell'invio.</p>
+    </div>
+  </div>
+
+  <!-- U4 -->
+  <div class="doc-section" id="u4">
+    <h1 class="doc-h1 user">4. Interagire con i Post</h1>
+    <h2 class="doc-h2 user" id="u4-1">4.1 Mettere like</h2>
+    <p class="doc-p">Sotto ogni post trovi il pulsante <strong>❤️</strong> con il numero di like. Clicca per aggiungere il tuo like. Clicca di nuovo per toglierlo. Il contatore si aggiorna immediatamente senza ricaricare la pagina.</p>
+    <div class="callout info">
+      <div class="callout-label">Nota</div>
+      <p>Devi essere loggato per mettere like. Se non lo sei, il pulsante appare disabilitato con il messaggio "Accedi per mettere like".</p>
+    </div>
+    <h2 class="doc-h2 user" id="u4-2">4.2 Commentare</h2>
+    <p class="doc-p">Sotto la sezione like trovi tutti i commenti del post e, se sei loggato, il campo testo per scriverne uno nuovo. Scrivi il tuo commento (massimo 300 caratteri) e premi <strong>Invia</strong>. Il commento apparirà subito con il tuo username e la data.</p>
+    <div class="callout info">
+      <div class="callout-label">Nota</div>
+      <p>Se non sei loggato, al posto del form vedrai un link che ti invita ad accedere.</p>
+    </div>
+    <h2 class="doc-h2 user" id="u4-3">4.3 Condividere un post</h2>
+    <p class="doc-p">Ogni post ha il pulsante <strong>🔗 Condividi</strong>. Cliccandolo si apre un menu con quattro opzioni:</p>
+    <ul class="doc-ul">
+      <li><strong>📱 WhatsApp</strong> — Su smartphone apre direttamente WhatsApp con il testo pre-compilato. Su PC apre WhatsApp Web.</li>
+      <li><strong>✈️ Telegram</strong> — Apre Telegram con il link e il titolo del post.</li>
+      <li><strong>🐦 X / Twitter</strong> — Apre la finestra di composizione tweet con titolo e link.</li>
+      <li><strong>📋 Copia link</strong> — Copia il testo del post e l'URL negli appunti. Appare un avviso verde "✅ Link copiato!" in basso.</li>
+    </ul>
+    <div class="callout tip">
+      <div class="callout-label">Suggerimento</div>
+      <p>Il testo condiviso contiene il titolo del post, un'anteprima del contenuto (massimo 120 caratteri) e il link alla pagina.</p>
+    </div>
+    <p class="doc-p">Per chiudere il menu senza selezionare nulla, clicca in qualsiasi punto della pagina fuori dal menu.</p>
+  </div>
+
+  <!-- U5 -->
+  <div class="doc-section" id="u5">
+    <h1 class="doc-h1 user">5. Chat in Tempo Reale</h1>
+    <p class="doc-p">Clicca su <strong>Chat Live</strong> nella navbar (visibile solo se sei loggato) per accedere alla chat.</p>
+    <ul class="doc-ul">
+      <li>I messaggi appaiono in tempo reale senza ricaricare la pagina.</li>
+      <li>I tuoi messaggi appaiono a <strong>destra</strong> con sfondo azzurro, quelli degli altri a <strong>sinistra</strong> con sfondo grigio.</li>
+      <li>I messaggi di sistema (entrata/uscita di un utente) appaiono al centro in giallo.</li>
+      <li>Per inviare un messaggio scrivi nel campo in basso e premi <strong>Invio</strong> o il pulsante <strong>Invia</strong>.</li>
+      <li>Se la connessione cade (es. si chiude la scheda), gli altri utenti vedono un messaggio che segnala la tua uscita.</li>
+    </ul>
+    <div class="callout warn">
+      <div class="callout-label">Attenzione</div>
+      <p>La chat non conserva la cronologia dei messaggi. Quando riapri la pagina, i messaggi precedenti non sono più visibili.</p>
+    </div>
+  </div>
+
+  <!-- U6 -->
+  <div class="doc-section" id="u6">
+    <h1 class="doc-h1 user">6. Domande Frequenti</h1>
+    <h2 class="doc-h2 user">Posso cancellare un mio post?</h2>
+    <p class="doc-p">In questa versione dell'applicazione non è ancora possibile cancellare i post. Questa funzionalità è tra i miglioramenti previsti per le versioni future.</p>
+    <h2 class="doc-h2 user">Posso modificare il mio username o la password?</h2>
+    <p class="doc-p">No, in questa versione non è presente un pannello di profilo. Username e password si impostano solo in fase di registrazione.</p>
+    <h2 class="doc-h2 user">I miei post restano salvati se il server si riavvia?</h2>
+    <p class="doc-p">Sì. I post sono salvati in un file sul server (<code>posts.json</code>) e persistono anche dopo il riavvio. L'unica eccezione è la chat: i messaggi non vengono salvati.</p>
+    <h2 class="doc-h2 user">La condivisione richiede il login?</h2>
+    <p class="doc-p">No. Il pulsante Condividi è visibile su ogni post indipendentemente dall'essere loggati o meno.</p>
+  </div>
+
+</div><!-- end view-user -->
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     VISTA: ARCHITETTURA TECNICA
+════════════════════════════════════════════════════════════ -->
+<div id="view-arch" class="view-panel">
+
+  <div class="cover">
+    <div class="cover-title">SOCIAL POST IT</div>
+    <div class="cover-view-badge arch">⚙️ Architettura Tecnica</div>
+    <div class="cover-sub">Documentazione del Progetto</div>
+    <div class="cover-author">Rosas Lorenzo — Anno scolastico 2025/2026</div>
+    <div class="cover-tags">
+      <span class="tag">Node.js</span><span class="tag">Express.js</span><span class="tag">EJS</span>
+      <span class="tag">WebSocket</span><span class="tag">JSON</span>
+    </div>
+  </div>
+
+  <div class="toc arch">
+    <h2>📋 Indice Tecnico</h2>
+    <ol>
+      <li><a href="#a1">Architettura del Software</a>
+        <ol><li><a href="#a1-1">Descrizione</a></li><li><a href="#a1-2">Componenti</a></li></ol>
+      </li>
+      <li><a href="#a2">Analisi delle Priorità</a>
+        <ol><li><a href="#a2-1">Robustezza</a></li><li><a href="#a2-2">Usabilità</a></li><li><a href="#a2-3">Portabilità</a></li></ol>
+      </li>
+      <li><a href="#a3">Design del Software</a>
+        <ol><li><a href="#a3-1">Principi</a></li><li><a href="#a3-2">Scelte architetturali</a></li></ol>
+      </li>
+      <li><a href="#a4">Documentazione del Codice</a>
+        <ol><li><a href="#a4-1">Struttura sorgente</a></li><li><a href="#a4-2">Route e funzioni</a></li><li><a href="#a4-3">Funzionalità</a></li><li><a href="#a4-4">Esempi</a></li><li><a href="#a4-5">Ottimizzazioni</a></li></ol>
+      </li>
+      <li><a href="#a5">Testing</a></li>
+      <li><a href="#a6">Deployment</a></li>
+      <li><a href="#a7">Manutenzione</a></li>
+      <li><a href="#a8">Conclusioni</a></li>
+      <li><a href="#a9">Documentazione Riga per Riga</a>
+        <ol><li><a href="#a9-1">server.js</a></li><li><a href="#a9-2">index.ejs</a></li><li><a href="#a9-3">post.ejs</a></li><li><a href="#a9-4">login.ejs</a></li><li><a href="#a9-5">signup.ejs</a></li><li><a href="#a9-6">chat.ejs</a></li></ol>
+      </li>
+    </ol>
+  </div>
+
+  <!-- A1 -->
+  <div class="doc-section" id="a1">
+    <h1 class="doc-h1 arch">1. Architettura del Software</h1>
+    <h2 class="doc-h2 arch" id="a1-1">1.1 Descrizione dell'Architettura</h2>
+    <p class="doc-p">L'applicazione segue un'architettura <strong>server-side MVC semplificata</strong>. Express.js gestisce le richieste HTTP (Controller), i file JSON fungono da modello dati (Model), i template EJS generano le pagine HTML (View). La chat aggiunge comunicazione bidirezionale via WebSocket sulla stessa porta HTTP (<code>ws://</code>).</p>
+    <h2 class="doc-h2 arch" id="a1-2">1.2 Componenti Principali</h2>
+    <ul class="doc-ul">
+      <li><strong>server.js</strong> — Cuore dell'app. Gestisce tutte le route, il middleware cookie, le funzioni helper, le route AJAX per like, la route chat e il server WebSocket.</li>
+      <li><strong>views/</strong> — Template EJS: <code>index.ejs</code>, <code>post.ejs</code>, <code>login.ejs</code>, <code>signup.ejs</code>, <code>chat.ejs</code>.</li>
+      <li><strong>public/</strong> — File statici (es. background.gif).</li>
+      <li><strong>utenti.json</strong> — Array di oggetti <code>{username, password}</code>.</li>
+      <li><strong>posts.json</strong> — Array di oggetti <code>{title, content, author, date, image?, likes[], comments[]}</code>.</li>
+    </ul>
+  </div>
+
+  <!-- A2 -->
+  <div class="doc-section" id="a2">
+    <h1 class="doc-h1 arch">2. Analisi delle Priorità</h1>
+    <h2 class="doc-h2 arch" id="a2-1">2.1 Robustezza</h2>
+    <ul class="doc-ul">
+      <li>Ogni I/O su file JSON è racchiuso in <code>try-catch</code>. Le funzioni <code>readJSONFile</code> e <code>writeJSONFile</code> gestiscono centralmente file mancanti, vuoti e JSON corrotti.</li>
+      <li>Le route protette verificano l'autenticazione prima di qualsiasi operazione.</li>
+      <li>Le immagini vengono accettate solo se iniziano con <code>data:image/</code>.</li>
+      <li>Il body parser è limitato a 10MB per prevenire attacchi DoS.</li>
+      <li>Compatibilità retroattiva: i post precedenti privi di <code>likes</code> o <code>comments</code> vengono gestiti con fallback <code>|| []</code>.</li>
+    </ul>
+    <h2 class="doc-h2 arch" id="a2-2">2.2 Usabilità</h2>
+    <ul class="doc-ul">
+      <li>Like senza reload della pagina (AJAX con <code>fetch</code>).</li>
+      <li>Anteprima immagine in tempo reale nel form di creazione post.</li>
+      <li>Condivisione post con menu dropdown e supporto Web Share API su mobile.</li>
+      <li>Layout responsivo: immagine + testo affiancati su desktop, in colonna su mobile.</li>
+      <li>Messaggi di errore chiari su ogni form.</li>
+    </ul>
+    <h2 class="doc-h2 arch" id="a2-3">2.3 Portabilità</h2>
+    <ul class="doc-ul">
+      <li>Compatibile con Windows, macOS e Linux (qualsiasi sistema con Node.js 14+).</li>
+      <li>Nessun database esterno: solo file JSON sul disco.</li>
+      <li><code>path.join()</code> garantisce percorsi corretti su ogni sistema operativo.</li>
+      <li>Tutte le dipendenze in <code>package.json</code>, installabili con <code>npm install</code>.</li>
+    </ul>
+  </div>
+
+  <!-- A3 -->
+  <div class="doc-section" id="a3">
+    <h1 class="doc-h1 arch">3. Design del Software</h1>
+    <h2 class="doc-h2 arch" id="a3-1">3.1 Principi di Design Adottati</h2>
+    <ul class="doc-ul">
+      <li><strong>DRY (Don't Repeat Yourself)</strong> — la logica di parsing dei cookie è centralizzata in <code>getUserFromCookies()</code>; la logica di broadcast WebSocket in <code>broadcast()</code>.</li>
+      <li><strong>Separazione delle responsabilità</strong> — logica server separata dalla presentazione (EJS) e dai dati (JSON).</li>
+      <li><strong>Progressivo miglioramento</strong> — la lettura dei post funziona senza JavaScript; like e chat richiedono JS.</li>
+      <li><strong>Compatibilità retroattiva</strong> — i post creati prima delle nuove funzionalità continuano a funzionare.</li>
+    </ul>
+    <h2 class="doc-h2 arch" id="a3-2">3.2 Scelte Architetturali e Motivi</h2>
+    <ul class="doc-ul">
+      <li><strong>Node.js + Express.js</strong> — leggeri, veloci da configurare, adatti a progetti didattici.</li>
+      <li><strong>EJS</strong> — sintassi HTML-simile, nessuna curva di apprendimento aggiuntiva.</li>
+      <li><strong>File JSON</strong> — zero configurazione, avvio immediato con <code>node server.js</code>.</li>
+      <li><strong>Cookie HTTP semplici</strong> — autenticazione senza librerie extra.</li>
+      <li><strong>Immagini in base64</strong> — nessuna gestione di cartelle di upload o librerie multipart.</li>
+      <li><strong>WebSocket (libreria ws)</strong> — chat real-time sulla stessa porta HTTP.</li>
+      <li><strong>AJAX con fetch() per like</strong> — aggiornamento UI senza reload di pagina.</li>
+      <li><strong>Web Share API per condivisione</strong> — nessuna libreria esterna, comportamento nativo su mobile.</li>
+    </ul>
+  </div>
+
+  <!-- A4 -->
+  <div class="doc-section" id="a4">
+    <h1 class="doc-h1 arch">4. Documentazione del Codice</h1>
+    <h2 class="doc-h2 arch" id="a4-1">4.1 Struttura del Codice Sorgente</h2>
+    <ul class="doc-ul">
+      <li><code>server.js</code> — Server Node.js ottimizzato (233 righe).</li>
+      <li><code>views/index.ejs</code> — Home page con post, like, commenti e condivisione (367 righe).</li>
+      <li><code>views/post.ejs</code> — Form creazione post con upload immagine.</li>
+      <li><code>views/login.ejs</code> — Form di accesso.</li>
+      <li><code>views/signup.ejs</code> — Form di registrazione.</li>
+      <li><code>views/chat.ejs</code> — Interfaccia chat WebSocket.</li>
+    </ul>
+    <h2 class="doc-h2 arch" id="a4-2">4.2 Route e Funzioni Principali</h2>
+    <ul class="doc-ul">
+      <li><code>GET /</code> — Home: carica e mostra tutti i post.</li>
+      <li><code>GET /login</code>, <code>POST /login</code> — Login.</li>
+      <li><code>GET /signup</code>, <code>POST /signup</code> — Registrazione.</li>
+      <li><code>GET /logout</code> — Cancella cookie, redirect.</li>
+      <li><code>GET /post</code>, <code>POST /post</code> — Creazione post (protetta).</li>
+      <li><code>POST /like/:index</code> — Toggle like, risponde JSON (niente reload).</li>
+      <li><code>POST /comment/:index</code> — Aggiunge commento.</li>
+      <li><code>GET /chat</code> — Pagina chat (protetta).</li>
+      <li><code>WebSocket ws://</code> — Messaggi real-time con broadcast.</li>
+    </ul>
+    <h2 class="doc-h2 arch" id="a4-3">4.3 Funzionalità</h2>
+    <h3 class="doc-h3 arch">Upload Immagine</h3>
+    <p class="doc-p">JavaScript legge il file selezionato con <code>FileReader</code>, lo converte in base64 e lo inserisce in un campo hidden. Il server valida il prefisso <code>data:image/</code> prima di salvarlo nel JSON. Al rendering, la stringa base64 è usata come <code>src</code> dell'img direttamente.</p>
+    <h3 class="doc-h3 arch">Like con Toggle AJAX</h3>
+    <p class="doc-p"><code>toggleLike()</code> invia una <code>POST /like/:index</code> con <code>fetch()</code>. Il server aggiunge o rimuove lo username dall'array <code>likes[]</code>, salva il file e risponde con <code>{count, liked}</code>. Il browser aggiorna contatore e colore del bottone senza reload.</p>
+    <h3 class="doc-h3 arch">Commenti</h3>
+    <p class="doc-p">Form POST a <code>/comment/:index</code>. Il server inserisce l'oggetto <code>{author, text, date}</code> nell'array <code>comments[]</code> del post e fa redirect a <code>/</code>.</p>
+    <h3 class="doc-h3 arch">Condivisione Post</h3>
+    <p class="doc-p">Pulsante lato client che apre un menu dropdown. Su mobile, WhatsApp usa la Web Share API nativa del sistema operativo. Su desktop usa link diretti (<code>wa.me</code>, <code>t.me/share</code>, <code>twitter.com/intent/tweet</code>). "Copia link" usa l'API Clipboard. Zero route aggiuntive sul server.</p>
+    <h3 class="doc-h3 arch">Chat WebSocket</h3>
+    <p class="doc-p">La funzione <code>broadcast(wss, payload, exclude)</code> centralizza l'invio a tutti i client connessi. Il gestore <code>wss.on('connection')</code> legge lo username dal cookie tramite <code>getUserFromCookies()</code> e gestisce ingresso, messaggi e uscita con tre listener.</p>
+    <h2 class="doc-h2 arch" id="a4-4">4.4 Esempi di Codice</h2>
+    <h3 class="doc-h3 arch">Toggle like (client)</h3>
+    <div class="doc-code-block">fetch('/like/' + postIndex, { method: 'POST' })
+  .then(r => r.json())
+  .then(data => {
+    btn.querySelector('.like-count').textContent = data.count;
+    data.liked ? btn.classList.add('liked') : btn.classList.remove('liked');
+  });</div>
+    <h3 class="doc-h3 arch">Condivisione WhatsApp (client)</h3>
+    <div class="doc-code-block">if (navigator.share) {                          // Web Share API (mobile)
+  navigator.share({ title, text, url });
+} else {                                        // Fallback desktop
+  window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+}</div>
+    <h3 class="doc-h3 arch">Broadcast WebSocket (server)</h3>
+    <div class="doc-code-block">function broadcast(wss, payload, exclude = null) {
+  const msg = JSON.stringify(payload);
+  wss.clients.forEach(client => {
+    if (client !== exclude && client.readyState === WebSocket.OPEN)
+      client.send(msg);
+  });
+}</div>
+    <h2 class="doc-h2 arch" id="a4-5">4.5 Ottimizzazioni applicate</h2>
+    <h3 class="doc-h3 arch">Helper getUserFromCookies()</h3>
+    <p class="doc-p">La logica di parsing cookie era duplicata nel middleware HTTP e nel gestore WebSocket. Estratta in una funzione condivisa, elimina la duplicazione e rende il codice DRY.</p>
+    <div class="doc-code-block">function getUserFromCookies(cookieHeader) {
+  if (!cookieHeader) return null;
+  const match = cookieHeader.split('; ').find(c => c.startsWith('user='));
+  return match ? decodeURIComponent(match.split('=')[1]) : null;
+}</div>
+    <h3 class="doc-h3 arch">Funzione broadcast()</h3>
+    <p class="doc-p">Il pattern <code>wss.clients.forEach(...)</code> era ripetuto tre volte. Centralizzato in <code>broadcast()</code>, che supporta anche l'esclusione di un client specifico.</p>
+    <h3 class="doc-h3 arch">Route semplificate con early return</h3>
+    <p class="doc-p">Le route di login e signup usano <code>return res.render(...)</code> per uscire subito in caso di errore, eliminando i blocchi <code>if/else</code> annidati e riducendo l'indentazione.</p>
+  </div>
+
+  <!-- A5 -->
+  <div class="doc-section" id="a5">
+    <h1 class="doc-h1 arch">5. Testing</h1>
+    <h2 class="doc-h2 arch">5.1 Strategia di Testing</h2>
+    <ul class="doc-ul">
+      <li>Test funzionale delle route: verifica che ogni URL risponda correttamente.</li>
+      <li>Test autenticazione: le route protette redirigono al login se non loggati.</li>
+      <li>Test upload: immagini valide salvate, file &gt;5MB rifiutati lato client.</li>
+      <li>Test like: toggle aggiunta/rimozione, no duplicati per stesso utente.</li>
+      <li>Test commenti: salvataggio con autore, testo e data corretti.</li>
+      <li>Test condivisione: menu apre/chiude, link corretti, clipboard funzionante, Web Share API su mobile.</li>
+      <li>Test chat: due schede browser aperte, messaggi ricevuti in real-time, notifiche ingresso/uscita.</li>
+      <li>Test retrocompatibilità: post senza <code>likes</code>/<code>comments</code> non generano errori.</li>
+    </ul>
+    <h2 class="doc-h2 arch">5.2 Risultati</h2>
+    <ul class="doc-ul">
+      <li>Tutte le route HTTP rispondono correttamente.</li>
+      <li>Autenticazione cookie funzionante su tutte le pagine protette.</li>
+      <li>Immagini fino a 5MB caricate e visualizzate correttamente.</li>
+      <li>Like toggle funziona senza duplicati.</li>
+      <li>Commenti salvati con i dati corretti.</li>
+      <li>Condivisione funzionante su desktop e mobile.</li>
+      <li>Chat real-time tra più client.</li>
+    </ul>
+  </div>
+
+  <!-- A6 -->
+  <div class="doc-section" id="a6">
+    <h1 class="doc-h1 arch">6. Deployment</h1>
+    <p class="doc-p">Requisiti: <strong>Node.js 14+</strong> installato.</p>
+    <div class="doc-code-block">/progetto
+├── server.js
+├── utenti.json        ← viene creato al primo signup
+├── posts.json         ← viene creato al primo post
+├── package.json
+├── views/
+│   ├── index.ejs
+│   ├── post.ejs
+│   ├── login.ejs
+│   ├── signup.ejs
+│   └── chat.ejs
+└── public/
+    └── background.gif</div>
+    <div class="steps">
+      <div class="step"><div class="step-num"></div><div class="step-body"><strong>npm install</strong><p>Installa le dipendenze: <code>express</code> e <code>ws</code>.</p></div></div>
+      <div class="step"><div class="step-num"></div><div class="step-body"><strong>node server.js</strong><p>Avvia il server.</p></div></div>
+      <div class="step"><div class="step-num"></div><div class="step-body"><strong>Aprire http://localhost:3000</strong><p>L'applicazione è operativa.</p></div></div>
+    </div>
+  </div>
+
+  <!-- A7 -->
+  <div class="doc-section" id="a7">
+    <h1 class="doc-h1 arch">7. Manutenzione</h1>
+    <ul class="doc-ul">
+      <li><strong>Integrità JSON</strong> — verificare <code>posts.json</code> e <code>utenti.json</code> se il server viene interrotto durante una scrittura.</li>
+      <li><strong>Password in chiaro</strong> — in produzione andrebbero hashate con <code>bcrypt</code>.</li>
+      <li><strong>Dimensione posts.json</strong> — con molte immagini base64 il file può crescere molto. Soluzione futura: database o upload su disco.</li>
+      <li><strong>Validazione server-side</strong> — aggiungere limiti di lunghezza per titolo, contenuto e commento.</li>
+      <li><strong>Gestione sessioni</strong> — sostituire i cookie semplici con <code>express-session</code> o JWT.</li>
+      <li><strong>Rate limiting</strong> — limitare le richieste per prevenire spam.</li>
+    </ul>
+  </div>
+
+  <!-- A8 -->
+  <div class="doc-section" id="a8">
+    <h1 class="doc-h1 arch">8. Conclusioni</h1>
+    <h2 class="doc-h2 arch">8.1 Sintesi</h2>
+    <ul class="doc-ul">
+      <li><strong>Robustezza</strong> — gestione errori su tutti gli I/O, validazione dati, route protette, compatibilità retroattiva.</li>
+      <li><strong>Usabilità</strong> — like AJAX, anteprima foto, condivisione nativa, chat real-time, layout responsivo.</li>
+      <li><strong>Portabilità</strong> — zero dipendenze esterne oltre Node.js e la libreria ws.</li>
+    </ul>
+    <h2 class="doc-h2 arch">8.2 Miglioramenti Futuri</h2>
+    <ul class="doc-ul">
+      <li>Sostituire i file JSON con un database (SQLite o MongoDB).</li>
+      <li>Hashing password con bcrypt.</li>
+      <li>Upload immagini su disco anziché base64 nel JSON.</li>
+      <li>Eliminazione dei propri post.</li>
+      <li>Notifiche per nuovi like e commenti.</li>
+      <li>Paginazione dei post.</li>
+    </ul>
+    <h2 class="doc-h2 arch">8.3 Lezioni Apprese</h2>
+    <ul class="doc-ul">
+      <li>Estrarre funzioni helper (DRY) riduce i bug e semplifica la manutenzione.</li>
+      <li>I file JSON sono ottimi per prototipi ma hanno limiti con scritture concorrenti.</li>
+      <li>WebSocket aggiunge real-time con poca complessità aggiuntiva rispetto a HTTP.</li>
+      <li>La Web Share API offre condivisione nativa su mobile senza librerie esterne.</li>
+      <li>base64 per le immagini elimina la complessità di gestione degli upload ma non scala bene.</li>
+    </ul>
+  </div>
+
+  <!-- A9 — Riga per Riga -->
+  <div class="doc-section" id="a9">
+    <h1 class="doc-h1 arch">9. Documentazione Riga per Riga</h1>
+    <p class="doc-p">Ogni riga significativa di ogni file sorgente è documentata nella tabella sottostante. Le righe di soli commenti (<code>//</code>) e quelle vuote sono omesse. Il codice nella colonna centrale può essere abbreviato con <code>...</code> per righe molto lunghe.</p>
+
+    <h2 class="doc-h2 arch" id="a9-1">9.1 server.js</h2>
+    <p class="doc-p">File principale del server Node.js. 233 righe. Include configurazione, helper, middleware, route HTTP, route AJAX e gestore WebSocket.</p>
+    <div class="code-table-wrap"><table class="code-table" id="tbl-server"></table></div>
+
+    <h2 class="doc-h2 arch" id="a9-2">9.2 index.ejs</h2>
+    <p class="doc-p">Template EJS della home page. 367 righe. Mostra i post con layout immagine+testo, like, commenti e il nuovo menu di condivisione.</p>
+    <div class="code-table-wrap"><table class="code-table" id="tbl-index"></table></div>
+
+    <h2 class="doc-h2 arch" id="a9-3">9.3 post.ejs</h2>
+    <p class="doc-p">Template EJS del form di creazione post con anteprima immagine e conversione base64 lato client.</p>
+    <div class="code-table-wrap"><table class="code-table" id="tbl-post"></table></div>
+
+    <h2 class="doc-h2 arch" id="a9-4">9.4 login.ejs</h2>
+    <p class="doc-p">Template EJS della pagina di accesso.</p>
+    <div class="code-table-wrap"><table class="code-table" id="tbl-login"></table></div>
+
+    <h2 class="doc-h2 arch" id="a9-5">9.5 signup.ejs</h2>
+    <p class="doc-p">Template EJS della pagina di registrazione.</p>
+    <div class="code-table-wrap"><table class="code-table" id="tbl-signup"></table></div>
+
+    <h2 class="doc-h2 arch" id="a9-6">9.6 chat.ejs</h2>
+    <p class="doc-p">Template EJS della chat in tempo reale con tutta la logica WebSocket lato client.</p>
+    <div class="code-table-wrap"><table class="code-table" id="tbl-chat"></table></div>
+  </div>
+
+</div><!-- end view-arch -->
+</main>
+
+<script>
+// ═══════════════════════════════════════════════
+// DATI RIGA PER RIGA — CODICE AGGIORNATO
+// ═══════════════════════════════════════════════
+const DATA = {
+
+// ── server.js (versione ottimizzata, 233 righe) ─────────────────────────────
+server: [
+  [1,  'const express = require("express");',          'Importa Express: il framework che gestisce il server web, le route HTTP e il middleware.'],
+  [2,  'const fs      = require("fs");',               'Importa il modulo nativo Node.js per leggere e scrivere file sul disco.'],
+  [3,  'const path    = require("path");',             'Importa il modulo per costruire percorsi file in modo sicuro su ogni sistema operativo.'],
+  [4,  'const http    = require("http");',             'Importa il modulo HTTP nativo, necessario per creare il server su cui agganciare WebSocket.'],
+  [5,  'const WebSocket = require("ws");',             'Importa la libreria ws per la chat in tempo reale tramite protocollo WebSocket.'],
+  [7,  'const app    = express();',                    'Crea l\'istanza principale dell\'applicazione Express.'],
+  [8,  'const server = http.createServer(app);',       'Crea un server HTTP che usa Express come gestore: necessario per condividere la porta con WebSocket.'],
+  [9,  'const wss    = new WebSocket.Server({ server });', 'Crea il server WebSocket agganciato allo stesso server HTTP. Chat e web usano la stessa porta 3000.'],
+  [10, 'const PORT   = 3000;',                         'Porta su cui il server sarà raggiungibile: http://localhost:3000.'],
+  [12, 'const usersFile = path.join(__dirname, "utenti.json");', 'Percorso assoluto al file degli utenti. path.join garantisce compatibilità Windows/Linux/macOS.'],
+  [13, 'const postsFile = path.join(__dirname, "posts.json");',  'Percorso assoluto al file dei post.'],
+  [16, 'app.use(express.static("public"));',           'Serve automaticamente tutti i file nella cartella public/ (es. background.gif) senza route dedicate.'],
+  [17, 'app.use(express.urlencoded({...limit:"10mb"}));', 'Abilita il parsing dei form HTML. Il limite a 10MB è necessario per le immagini in base64.'],
+  [18, 'app.use(express.json({ limit: "10mb" }));',    'Abilita il parsing JSON: necessario per le richieste AJAX dei like.'],
+  [19, 'app.set("view engine", "ejs");',               'Imposta EJS come motore di template: Express trasformerà i file .ejs in pagine HTML dinamiche.'],
+  [24, 'function getUserFromCookies(cookieHeader) {',  'HELPER OTTIMIZZATO: estrae lo username dal cookie header. Condiviso da middleware HTTP e WebSocket, elimina codice duplicato.'],
+  [25, '    if (!cookieHeader) return null;',           'Se non ci sono cookie, restituisce null immediatamente (guard clause).'],
+  [26, '    const match = cookieHeader.split("; ").find(...);', 'Divide la stringa cookie in un array e cerca quello con nome "user=".'],
+  [27, '    return match ? decodeURIComponent(...) : null;', 'Se trovato, decodifica lo username URL-encoded e lo restituisce. Altrimenti null.'],
+  [31, 'function readJSONFile(filePath, defaultData = []) {', 'HELPER: legge e parsa un file JSON. defaultData è il valore restituito in caso di errore o file mancante.'],
+  [32, '    try {',                                     'Blocco try: intercetta errori di lettura, permessi o JSON malformato.'],
+  [33, '        if (!fs.existsSync(filePath)) return defaultData;', 'Se il file non esiste, restituisce subito il default invece di lanciare un errore.'],
+  [34, '        const raw = fs.readFileSync(filePath, "utf8");', 'Legge il contenuto del file come testo UTF-8 in modo sincrono.'],
+  [35, '        return raw.trim() ? JSON.parse(raw) : defaultData;', 'Se il file è vuoto (solo spazi), restituisce il default. Altrimenti parsa e restituisce il JSON.'],
+  [36, '    } catch (err) {',                           'Cattura qualsiasi errore (file corrotto, permessi, JSON invalido).'],
+  [37, '        console.error(`Errore lettura ${filePath}:`, err);', 'Logga l\'errore nella console del server per il debugging, senza far crashare l\'app.'],
+  [38, '        return defaultData;',                   'Restituisce il valore sicuro di default invece di propagare l\'errore.'],
+  [43, 'function writeJSONFile(filePath, data) {',     'HELPER: scrive dati su un file JSON con indentazione. Restituisce true se riesce, false se fallisce.'],
+  [45, '        fs.writeFileSync(filePath, JSON.stringify(data, null, 2));', 'Serializza l\'oggetto JavaScript in JSON formattato (null=nessun sostituto, 2=due spazi di indentazione) e lo scrive.'],
+  [46, '        return true;',                          'Segnala che la scrittura è avvenuta con successo.'],
+  [47, '    } catch (err) {',                           'Cattura errori di scrittura (disco pieno, permessi).'],
+  [49, '        return false;',                         'Segnala il fallimento: la route che chiama writeJSONFile può gestire l\'errore.'],
+  [54, 'app.use((req, res, next) => {',                'MIDDLEWARE OTTIMIZZATO: eseguito per ogni richiesta HTTP. Ora è compatto in 3 righe grazie all\'helper.'],
+  [55, '    res.locals.currentUser = getUserFromCookies(req.headers.cookie);', 'Chiama il nuovo helper e salva il risultato in res.locals: variabile accessibile da tutte le route e template EJS.'],
+  [56, '    next();',                                   'Passa il controllo alla route successiva nella catena di middleware.'],
+  [60, 'app.get("/", (req, res) => {',                 'Route GET per la home page "/". Risponde con la pagina principale.'],
+  [61, '    const posts = readJSONFile(postsFile, []);', 'Carica tutti i post. In caso di errore usa un array vuoto così la pagina mostra comunque il messaggio "nessun post".'],
+  [62, '    res.render("index", { posts });',           'Genera HTML usando il template index.ejs, passando i post come variabile disponibile nel template.'],
+  [66, 'app.get("/login", ...) => res.render("login", { error: null });', 'Mostra la pagina di login. error:null indica che non c\'è nessun messaggio di errore al caricamento iniziale.'],
+  [68, 'app.post("/login", (req, res) => {',           'Gestisce l\'invio del form di login (metodo POST).'],
+  [69, '    const { username, password } = req.body;', 'Destruttura username e password dai dati del form (req.body è popolato dal middleware urlencoded).'],
+  [70, '    const users = readJSONFile(usersFile, []);', 'Carica la lista degli utenti registrati.'],
+  [71, '    const user  = users.find(u => u.username === username && u.password === password);', 'Cerca un utente con username E password corrispondenti. Confronto in chiaro (nessun hashing in questa versione).'],
+  [73, '    if (!user) return res.render("login", { error: "Credenziali errate" });', 'EARLY RETURN: se le credenziali non corrispondono, mostra subito l\'errore e interrompe l\'esecuzione.'],
+  [75, '    res.setHeader("Set-Cookie", `user=${encodeURIComponent(username)}; Path=/`);', 'Imposta il cookie di sessione. encodeURIComponent gestisce caratteri speciali nei nomi utente. Path=/ lo rende valido su tutto il sito.'],
+  [76, '    res.redirect("/");',                        'Login riuscito: reindirizza alla home dove il middleware leggerà il nuovo cookie.'],
+  [80, 'app.get("/signup", ...) => res.render("signup", { error: null });', 'Mostra la pagina di registrazione senza errori iniziali.'],
+  [82, 'app.post("/signup", (req, res) => {',          'Gestisce l\'invio del form di registrazione.'],
+  [83, '    const { username, password } = req.body;', 'Estrae username e password dal form.'],
+  [84, '    const users = readJSONFile(usersFile, []);', 'Carica gli utenti esistenti per verificare la disponibilità dello username.'],
+  [86, '    if (users.some(u => u.username === username))', 'Controlla se esiste già un utente con lo stesso username. some() restituisce true se almeno un elemento soddisfa la condizione.'],
+  [87, '        return res.render("signup", { error: "Username già in uso" });', 'Username occupato: mostra l\'errore con early return.'],
+  [89, '    users.push({ username, password });',       'Aggiunge il nuovo utente all\'array. In produzione la password andrebbe hashata prima di questo punto.'],
+  [90, '    if (!writeJSONFile(usersFile, users))',     'Tenta di salvare il file. Se fallisce (disco pieno, permessi)...'],
+  [91, '        return res.render("signup", { error: "Errore nella registrazione" });', '...mostra l\'errore all\'utente con early return.'],
+  [93, '    res.setHeader("Set-Cookie", `user=${encodeURIComponent(username)}; Path=/`);', 'Imposta il cookie: il nuovo utente è loggato automaticamente dopo la registrazione.'],
+  [94, '    res.redirect("/");',                        'Redirect alla home come utente loggato.'],
+  [98, 'app.get("/logout", (req, res) => {',           'Route per il logout.'],
+  [99, '    res.setHeader("Set-Cookie", "user=; ...Expires=Thu, 01 Jan 1970...");', 'Cancella il cookie impostando una data di scadenza nel passato: il browser lo rimuove automaticamente.'],
+  [100,'    res.redirect("/");',                        'Redirect alla home come visitatore non loggato.'],
+  [104,'app.get("/post", (req, res) => {',             'Route GET per la pagina di creazione post.'],
+  [105,'    if (!res.locals.currentUser) return res.redirect("/login");', 'Protezione: se non loggato, rimanda al login. La variabile è stata impostata dal middleware.'],
+  [106,'    res.render("post", { error: null });',      'Mostra il form di creazione post senza errori.'],
+  [109,'app.post("/post", (req, res) => {',            'Route POST che riceve e salva il nuovo post.'],
+  [110,'    if (!res.locals.currentUser) return res.redirect("/login");', 'Doppio controllo server-side dell\'autenticazione: impedisce l\'aggiramento della protezione lato client.'],
+  [112,'    const { title, content, image } = req.body;', 'Estrae i tre campi dal form. image è la stringa base64 (opzionale).'],
+  [113,'    const posts   = readJSONFile(postsFile, []);', 'Carica i post esistenti per aggiungere quello nuovo.'],
+  [114,'    const newPost = { title, content, author: res.locals.currentUser, date: new Date().toLocaleString(), likes: [], comments: [] };', 'Costruisce l\'oggetto post. author viene dal cookie (non modificabile dall\'utente tramite il form).'],
+  [123,'    if (image && image.startsWith("data:image/")) newPost.image = image;', 'Aggiunge l\'immagine solo se presente e con prefisso valido (es. data:image/png;base64,...). Previene dati arbitrari.'],
+  [125,'    posts.push(newPost);',                      'Aggiunge il nuovo post alla fine dell\'array.'],
+  [126,'    if (!writeJSONFile(postsFile, posts))',     'Salva il file aggiornato. Se fallisce...'],
+  [127,'        return res.render("post", { error: "Errore nel salvataggio del post" });', '...mostra l\'errore nel form con early return.'],
+  [129,'    res.redirect("/");',                        'Post salvato: torna alla home dove il nuovo post apparirà in cima.'],
+  [133,'app.post("/like/:index", (req, res) => {',     'Route AJAX per il like. :index è il numero del post nell\'array. Risponde sempre con JSON (niente redirect).'],
+  [134,'    const user  = res.locals.currentUser;',    'Legge l\'utente loggato dal middleware.'],
+  [135,'    if (!user) return res.json({ error: "Non autenticato" });', 'Se non loggato, risponde con JSON di errore (non redirect, perché è una chiamata AJAX).'],
+  [137,'    const index = parseInt(req.params.index);', 'Converte l\'indice da stringa URL a numero intero.'],
+  [138,'    const posts = readJSONFile(postsFile, []);', 'Carica tutti i post.'],
+  [140,'    if (index < 0 || index >= posts.length)',  'Validazione: l\'indice deve essere nel range valido dell\'array.'],
+  [141,'        return res.json({ error: "Post non trovato" });', 'Indice fuori range: risposta JSON di errore.'],
+  [143,'    const post  = posts[index];',              'Riferimento diretto al post specifico nell\'array.'],
+  [144,'    if (!post.likes) post.likes = [];',        'Compatibilità retroattiva: crea l\'array likes se il post è stato creato prima di questa funzionalità.'],
+  [146,'    const i      = post.likes.indexOf(user);', 'Cerca la posizione dell\'utente nell\'array likes. Restituisce -1 se non c\'è.'],
+  [147,'    const liked  = i === -1;',                 'liked è true se l\'utente NON ha ancora messo like (e quindi sta per aggiungerlo).'],
+  [148,'    liked ? post.likes.push(user) : post.likes.splice(i, 1);', 'Toggle: aggiunge lo username se liked=true, oppure lo rimuove dalla posizione i con splice(i,1).'],
+  [150,'    writeJSONFile(postsFile, posts);',         'Salva l\'array aggiornato su disco.'],
+  [151,'    res.json({ count: post.likes.length, liked });', 'Risponde con il nuovo conteggio e lo stato. Il browser li usa per aggiornare la UI senza ricaricare la pagina.'],
+  [155,'app.post("/comment/:index", (req, res) => {', 'Route per aggiungere un commento.'],
+  [156,'    const user = res.locals.currentUser;',     'Utente loggato dal middleware.'],
+  [157,'    if (!user) return res.redirect("/login");', 'Non loggato: redirect al login.'],
+  [159,'    const { text } = req.body;',               'Testo del commento dal form.'],
+  [160,'    if (!text?.trim()) return res.redirect("/");', 'Se il testo è vuoto o solo spazi (?.trim() usa optional chaining per evitare errori se text è undefined), ignora e torna alla home.'],
+  [162,'    const index = parseInt(req.params.index);', 'Indice del post a cui aggiungere il commento.'],
+  [163,'    const posts = readJSONFile(postsFile, []);', 'Carica i post.'],
+  [165,'    if (index < 0 || index >= posts.length) return res.redirect("/");', 'Indice fuori range: torna alla home senza errore.'],
+  [167,'    if (!posts[index].comments) posts[index].comments = [];', 'Compatibilità retroattiva: crea l\'array se mancante.'],
+  [168,'    posts[index].comments.push({ author: user, text: text.trim(), date: new Date().toLocaleString() });', 'Aggiunge il commento con autore (dal cookie), testo ripulito e timestamp.'],
+  [170,'    writeJSONFile(postsFile, posts);',         'Salva il file aggiornato.'],
+  [171,'    res.redirect("/");',                        'Ricarica la home per mostrare il nuovo commento.'],
+  [175,'app.get("/chat", (req, res) => {',             'Route per la pagina chat.'],
+  [176,'    if (!res.locals.currentUser) return res.redirect("/login");', 'Protezione: solo utenti loggati accedono alla chat.'],
+  [177,'    res.render("chat", { currentUser: res.locals.currentUser });', 'Passa il nome utente al template EJS della chat (serve per distinguere i propri messaggi).'],
+  [181,'function broadcast(wss, payload, exclude = null) {', 'HELPER OTTIMIZZATO: invia un messaggio JSON a tutti i client WebSocket aperti. exclude permette di escludere un client specifico.'],
+  [182,'    const msg = JSON.stringify(payload);',     'Serializza il messaggio una sola volta (ottimizzazione: evita di serializzare per ogni client).'],
+  [183,'    wss.clients.forEach(client => {',          'Itera su tutti i client WebSocket connessi al server.'],
+  [184,'        if (client !== exclude && client.readyState === WebSocket.OPEN)', 'Esclude il client specificato E i client non connessi (WebSocket.OPEN = 1 = connessione attiva).'],
+  [185,'            client.send(msg);',                'Invia il messaggio serializzato al client.'],
+  [189,'wss.on("connection", (ws, req) => {',         'Evento scattato ogni volta che un browser apre la pagina chat. ws è il socket del nuovo utente, req la sua richiesta HTTP iniziale.'],
+  [190,'    const username = getUserFromCookies(req.headers.cookie) || "Anonimo";', 'OTTIMIZZAZIONE: una riga sostituisce l\'intero blocco if/cookie della versione precedente. || "Anonimo" è il fallback.'],
+  [193,'    ws.send(JSON.stringify({ type: "system", message: `Benvenuto...`, timestamp }));', 'Invia il messaggio di benvenuto SOLO al nuovo utente (ws.send, non broadcast).'],
+  [200,'    broadcast(wss, { type: "system", message: `${username} si è unito...` }, ws);', 'Notifica agli ALTRI utenti che qualcuno è entrato. ws è il client da escludere (il nuovo non riceve la notifica di se stesso).'],
+  [206,'    ws.on("message", raw => {',               'Listener: scatta ogni volta che questo utente invia un messaggio dalla chat.'],
+  [207,'        try {',                               'try-catch per gestire JSON malformato senza far crashare il server.'],
+  [208,'            const data = JSON.parse(raw);',   'Parsa il messaggio ricevuto da stringa JSON a oggetto JavaScript.'],
+  [209,'            if (data.type !== "chat") return;', 'Filtra: gestisce solo messaggi di tipo "chat" (architettura estendibile per altri tipi futuri).'],
+  [210,'            broadcast(wss, { type: "chat", username, message: data.message, timestamp });', 'OTTIMIZZAZIONE: una chiamata a broadcast() sostituisce le 5 righe di forEach della versione precedente.'],
+  [216,'        } catch (err) {',                     'Cattura errori di parsing.'],
+  [217,'            console.error("Errore parsing messaggio WebSocket:", err);', 'Logga senza far crashare il server.'],
+  [221,'    ws.on("close", () => {',                  'Listener: scatta quando l\'utente chiude la scheda, perde la connessione o il browser viene chiuso.'],
+  [222,'        broadcast(wss, { type: "system", message: `${username} ha lasciato la chat`, timestamp });', 'Notifica tutti gli utenti rimanenti dell\'uscita. Nessun exclude: tutti devono ricevere questa notifica.'],
+  [229,'    ws.on("error", err => console.error("Errore WebSocket:", err));', 'Gestisce errori sul singolo socket senza far crashare il server. Scritto come arrow function compatta.'],
+  [233,'server.listen(PORT, () => console.log(`Server avviato su http://localhost:${PORT}`));', 'Avvia il server HTTP (e WebSocket) sulla porta 3000. Il callback stampa la conferma nella console.'],
+],
+
+// ── index.ejs (con condivisione, 367 righe) ──────────────────────────────────
+index: [
+  [15, '.background-gif { position: fixed; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:-2; }', 'GIF di sfondo: fissa a tutta schermata, dietro tutti gli altri elementi (z-index negativo).'],
+  [22, '.overlay { position: fixed; ... background-color: rgba(0,0,0,0.493); z-index:-1; }', 'Overlay scuro semitrasparente sopra il GIF. Migliora la leggibilità del testo bianco.'],
+  [29, '.navbar { background-color: rgba(2,17,76,0.95) !important; border-bottom: 2px solid #0dcaf0; }', 'Navbar blu scuro quasi opaca con bordo azzurro in basso come separatore visivo.'],
+  [59, '.post-media-row { display: flex; gap: 18px; align-items: flex-start; }', 'Contenitore flex: mette immagine e testo affiancati con 18px di spazio tra loro.'],
+  [60, '.post-img-wrap  { flex: 0 0 45%; max-width: 45%; }', 'La colonna immagine occupa esattamente il 45% e non si restringe né espande (flex: 0 0).'],
+  [61, '.post-img-wrap img { width:100%; max-height:420px; object-fit:cover; ... }', 'L\'immagine riempie la colonna, al massimo 420px di altezza. object-fit:cover ritaglia proporzionalmente.'],
+  [66, '.post-text-wrap { flex:1 1 0; min-width:0; word-break:break-word; }', 'La colonna testo occupa tutto lo spazio rimanente. word-break evita che URL o parole lunghe sfondino il layout.'],
+  [67, '@media (max-width: 640px) { .post-media-row { flex-direction: column; } }', 'Su mobile (< 640px): immagine e testo si mettono in colonna anziché affiancati.'],
+  [73, '.btn-like { background: none; border: 1px solid #555; ... border-radius: 20px; }', 'Pulsante like: forma a pillola, bordo grigio, sfondo trasparente.'],
+  [79, '.btn-like:hover:not(:disabled) { border-color: #e05252; color: #e05252; }', 'Hover sul like: bordo e testo diventano rossi. :not(:disabled) evita l\'effetto se il pulsante è disabilitato.'],
+  [80, '.btn-like.liked { border-color: #e05252; color: #e05252; background-color: rgba(224,82,82,0.12); }', 'Stato "liked": bordo rosso, testo rosso e sfondo rosso leggermente trasparente per indicare il like attivo.'],
+  [84, '.share-wrap { position: relative; display: inline-block; }', 'Contenitore relativo: necessario per posizionare il menu share in modo assoluto rispetto al pulsante.'],
+  [85, '.btn-share { background: none; border: 1px solid #555; ... border-radius: 20px; }', 'Pulsante Condividi: stile simile al like, bordo grigio a pillola.'],
+  [91, '.btn-share:hover { border-color: #0dcaf0; color: #0dcaf0; }', 'Hover sul Condividi: diventa azzurro.'],
+  [92, '.share-menu { display: none; position: absolute; bottom: calc(100%+6px); left:0; ... }', 'Menu dropdown nascosto di default. Posizionato sopra il pulsante (bottom:100%+6px) per non andare fuori schermo.'],
+  [105,'.share-menu.open { display: block; }', 'Mostra il menu aggiungendo la classe "open" tramite JavaScript.'],
+  [106,'.share-menu a, .share-menu button { display:flex; align-items:center; gap:8px; width:100%; ... }', 'Ogni voce del menu: flex orizzontale con icona e testo, larghezza piena, sfondo trasparente.'],
+  [115,'.share-menu a:hover, .share-menu button:hover { background: rgba(255,255,255,0.08); }', 'Hover sulle voci: leggero sfondo bianco semitrasparente come indicatore visivo.'],
+  [116,'.share-toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); ... opacity:0; }', 'Toast "link copiato": centrato in basso, inizialmente invisibile (opacity:0) e non interattivo (pointer-events:none).'],
+  [123,'.share-toast.show { opacity: 1; }', 'Mostra il toast aggiungendo la classe "show". La transizione CSS crea l\'effetto fade-in.'],
+  [155,`<nav class="navbar navbar-expand-lg navbar-dark">`, 'Barra di navigazione Bootstrap: espandibile su schermi grandi, tema scuro.'],
+  [159,`<% if (currentUser) { %>`, 'EJS: se l\'utente è loggato (currentUser non è null), mostra il menu da utente autenticato.'],
+  [160,`Benvenuto, <span class="welcome-text"><%= currentUser %></span>`, 'EJS: inserisce il nome utente nel template. <%= %> esegue escape HTML per prevenire XSS.'],
+  [161,`<a href="/post" class="btn btn-primary btn-sm me-2">Nuovo Post</a>`, 'Link al form di creazione post. Visibile solo agli utenti loggati.'],
+  [162,`<a href="/chat" class="btn btn-chat btn-sm me-2">Chat Live</a>`, 'Link alla chat in tempo reale. Visibile solo agli utenti loggati.'],
+  [178,`<% posts.slice().reverse().forEach((post, reversedIndex) => { %>`, 'Itera i post in ordine inverso (più recente prima). slice() crea una copia dell\'array per non modificare l\'originale.'],
+  [179,`<% const postIndex = posts.length - 1 - reversedIndex; %>`, 'Calcola l\'indice reale nell\'array originale: necessario per le route /like/:index e /comment/:index.'],
+  [191,`<% if (post.image) { %>`, 'Controlla se il post ha un\'immagine allegata. Se no, mostra solo il testo a larghezza piena.'],
+  [192,`<div class="post-media-row">`, 'Layout affiancato: immagine a sinistra (45%), testo a destra (55%).'],
+  [194,`<img src="<%= post.image %>" alt="Immagine del post">`, 'La stringa base64 è usata direttamente come src. Il browser decodifica e visualizza l\'immagine senza file aggiuntivi.'],
+  [211,`<button class="btn-like <%= ... post.likes.includes(currentUser) ? 'liked' : '' %>"`, 'Aggiunge la classe "liked" (colore rosso) se l\'utente corrente ha già messo like. Confronto fatto lato server in EJS.'],
+  [213,`onclick="toggleLike(<%= postIndex %>, this)"`, 'Passa l\'indice del post e il riferimento al pulsante stesso alla funzione JS. "this" serve per aggiornare il DOM.'],
+  [214,`<% if (!currentUser) { %> disabled title="Accedi per mettere like" <% } %>`, 'Disabilita il pulsante se non loggato. L\'attributo title mostra un tooltip esplicativo.'],
+  [215,`<span class="like-count"><%= (post.likes || []).length %></span>`, 'Mostra il numero di like. || [] è il fallback per i post precedenti che non hanno ancora l\'array likes.'],
+  [217,`<small class="text-muted">💬 <%= (post.comments || []).length %> commenti</small>`, 'Numero di commenti con fallback || [].'],
+  [220,`<div class="share-wrap">`, 'Contenitore relativo per il posizionamento assoluto del menu dropdown.'],
+  [221,`<button class="btn-share" onclick="toggleShareMenu(event, this)">🔗 Condividi</button>`, 'Pulsante condivisione. Passa l\'evento (per stopPropagation) e this (riferimento al bottone per trovare il menu adiacente).'],
+  [223,`<div class="share-menu">`, 'Menu dropdown, inizialmente nascosto. Contiene i link per le varie piattaforme.'],
+  [224,`<a href="#" onclick="shareWhatsApp(event, '<%= encodeURIComponent(post.title) %>', ...)">`, 'EJS URL-encode il titolo del post prima di iniettarlo nel JavaScript. Necessario per titoli con virgolette o caratteri speciali.'],
+  [291,`function toggleLike(postIndex, btn) {`, 'Funzione JS per il like senza reload. Chiamata al click del pulsante.'],
+  [292,`    fetch('/like/' + postIndex, { method: 'POST' })`, 'Richiesta POST asincrona alla route del server. Non ricarica la pagina.'],
+  [293,`    .then(r => r.json())`, 'Parsa la risposta del server da testo JSON a oggetto JavaScript.'],
+  [295,`    if (data.error) return;`, 'Se il server risponde con un errore (es. non autenticato), interrompe l\'esecuzione senza modificare la UI.'],
+  [296,`    btn.querySelector('.like-count').textContent = data.count;`, 'Aggiorna il numero di like nel DOM senza ricaricare la pagina.'],
+  [297,`    data.liked ? btn.classList.add('liked') : btn.classList.remove('liked');`, 'Aggiunge o rimuove la classe "liked" (colore rosso) in base alla risposta del server.'],
+  [303,`function toggleShareMenu(e, btn) {`, 'Apre/chiude il menu di condivisione di un post. Gestisce anche la chiusura degli altri menu aperti.'],
+  [304,`    e.stopPropagation();`, 'Blocca la propagazione del click al documento. Senza questo, il listener document.addEventListener("click",...) chiuderebbe immediatamente il menu appena aperto.'],
+  [305,`    const menu = btn.nextElementSibling;`, 'Trova il div.share-menu che segue il pulsante nel DOM (sono elementi fratelli).'],
+  [306,`    const isOpen = menu.classList.contains('open');`, 'Salva lo stato corrente del menu prima di chiuderlo.'],
+  [307,`    closeAllShareMenus();`, 'Chiude tutti i menu aperti su altri post prima di aprire quello corrente.'],
+  [308,`    if (!isOpen) menu.classList.add('open');`, 'Se il menu era chiuso, lo apre. Se era aperto (isOpen=true), rimane chiuso (effetto toggle).'],
+  [311,`function closeAllShareMenus() {`, 'Chiude tutti i menu di condivisione aperti sulla pagina.'],
+  [312,`    document.querySelectorAll('.share-menu.open').forEach(m => m.classList.remove('open'));`, 'Seleziona tutti i menu con classe "open" e rimuove la classe da ognuno.'],
+  [316,`document.addEventListener('click', closeAllShareMenus);`, 'Listener globale: chiude tutti i menu quando l\'utente clicca in qualsiasi punto della pagina.'],
+  [319,`function buildShareText(titleEnc, snippetEnc) {`, 'Costruisce il testo da condividere decodificando i valori URL-encoded passati da EJS.'],
+  [320,`    const title   = decodeURIComponent(titleEnc);`, 'Decodifica il titolo: es. "Ciao%20mondo" → "Ciao mondo".'],
+  [322,`    return \`\${title}\${snippet ? ' — ' + snippet : ''}\`;`, 'Costruisce il testo finale. Se il contenuto è vuoto (post solo titolo), non aggiunge il separatore " — ".'],
+  [326,`function shareWhatsApp(e, titleEnc, snippetEnc) {`, 'Gestisce la condivisione via WhatsApp con rilevamento automatico del contesto (mobile vs desktop).'],
+  [327,`    e.preventDefault();`, 'Previene il comportamento default del tag <a> (navigazione a "#").'],
+  [330,`    const text = buildShareText(titleEnc, snippetEnc) + '\\n' + window.location.href;`, 'Aggiunge l\'URL della pagina al testo condiviso su nuova riga.'],
+  [331,`    if (navigator.share) {`, 'Controlla se il browser supporta la Web Share API (disponibile su Chrome/Safari mobile, alcuni desktop recenti).'],
+  [332,`        navigator.share({ title: ..., text, url: window.location.href });`, 'Invoca il foglio di condivisione nativo del sistema operativo. Su iOS/Android mostra le app installate.'],
+  [334,`        window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');`, 'Fallback desktop: apre WhatsApp Web in una nuova scheda con il testo pre-compilato nell\'URL.'],
+  [338,`function shareTelegram(e, titleEnc, snippetEnc) {`, 'Condivisione via Telegram usando il link diretto t.me/share/url.'],
+  [342,`    const url = 'https://t.me/share/url?url=' + encodeURIComponent(window.location.href) + '&text=' + encodeURIComponent(text);`, 'Costruisce l\'URL Telegram con link e testo entrambi URL-encoded.'],
+  [346,`function shareTwitter(e, titleEnc, snippetEnc) {`, 'Condivisione via X/Twitter usando l\'intent tweet.'],
+  [350,`    const url = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(window.location.href);`, 'URL per la finestra di composizione tweet di Twitter.'],
+  [354,`function copyLink(titleEnc, snippetEnc) {`, 'Copia il testo del post con l\'URL negli appunti del sistema.'],
+  [357,`    navigator.clipboard.writeText(text).then(() => showToast());`, 'API Clipboard asincrona: chiede il permesso (se necessario) e copia il testo. Al termine mostra il toast.'],
+  [360,`function showToast() {`, 'Mostra il toast di conferma "✅ Link copiato!" per 2.5 secondi.'],
+  [361,`    const t = document.getElementById('shareToast');`, 'Riferimento all\'elemento toast nel DOM.'],
+  [362,`    t.classList.add('show');`, 'Aggiunge la classe "show" che porta opacity da 0 a 1 con transizione CSS.'],
+  [363,`    setTimeout(() => t.classList.remove('show'), 2500);`, 'Dopo 2.5 secondi rimuove la classe "show", il toast scompare con fade-out.'],
+],
+
+// ── post.ejs ─────────────────────────────────────────────────────────────────
+post: [
+  [35, '.post-card { background-color: rgba(10,10,20,0.9); border: 2px solid #0dcaf0; border-radius: 8px; }', 'Scheda del form: sfondo scuro con bordo azzurro e angoli arrotondati.'],
+  [40, '.form-control { background-color: rgba(67,67,67,0.8) !important; color: #ffffff !important; }', 'Campi input: sfondo grigio scuro, testo bianco. !important sovrascrive Bootstrap.'],
+  [45, 'textarea.form-control { min-height: 250px; }', 'La textarea per il contenuto ha un\'altezza minima per comodità di scrittura.'],
+  [48, '.form-control:focus { border-color: #0dcaf0; box-shadow: 0 0 0 0.25rem rgba(13,202,240,0.25); }', 'Focus su un campo: bordo azzurro e ombra azzurra semitrasparente come indicatore visivo.'],
+  [61, '.image-preview { max-width:100%; max-height:250px; border-radius:6px; display:none; margin-top:10px; }', 'Anteprima immagine: nascosta di default (display:none). Appare solo dopo la selezione di un file.'],
+  [69, '.file-label { cursor:pointer; background-color:rgba(67,67,67,0.8); border:1px dashed #0dcaf0; border-radius:6px; }', 'Etichetta cliccabile per il campo file: stile area tratteggiata che invita al click.'],
+  [79, '.file-label:hover { border-color: #fff; color: #fff; }', 'Hover sull\'area file: bordo e testo diventano bianchi.'],
+  [104,'<form action="/post" method="POST" id="postForm">', 'Form con metodo POST verso la route /post. L\'id serve solo per riferimento JavaScript.'],
+  [106,'<input type="text" name="title" class="form-control form-control-lg" placeholder="Titolo" required>', 'Campo titolo: obbligatorio (required), Grande (form-control-lg).'],
+  [110,'<textarea name="content" class="form-control" placeholder="Scrivi il tuo post..." required>', 'Textarea per il contenuto: obbligatoria.'],
+  [114,'<label class="file-label" for="imageInput">', 'L\'etichetta è collegata all\'input file tramite "for". Cliccando l\'etichetta si apre il selettore di file.'],
+  [117,'<input type="file" id="imageInput" accept="image/*" style="display:none;">', 'Input file nascosto visivamente. accept="image/*" limita la selezione alle sole immagini nel selettore.'],
+  [119,'<img id="imagePreview" class="image-preview" alt="Anteprima">', 'Tag img per l\'anteprima: inizialmente nascosto. La src verrà impostata da JavaScript dopo la selezione.'],
+  [120,'<input type="hidden" name="image" id="imageBase64">', 'Campo hidden che conterrà la stringa base64. Viene inviato con il form senza che l\'utente lo veda.'],
+  [121,'<small id="imageError" style="display:none; color:#e05252;">Immagine troppo grande (max 5MB)</small>', 'Messaggio di errore dimensione: nascosto di default, mostrato da JS se il file supera 5MB.'],
+  [122,'<small id="imageName" style="display:none; color:#4eca8b;"></small>', 'Mostra il nome del file selezionato con colore verde. Nascosto di default.'],
+  [131,'const MAX_SIZE = 5 * 1024 * 1024;', 'Costante: 5MB in byte. 5 × 1024 × 1024 = 5.242.880 byte. Usata per la validazione lato client.'],
+  [132,'imageInput.addEventListener("change", function() {', 'Listener: scatta quando l\'utente seleziona un file.'],
+  [133,'    const file = this.files[0];', 'Prende il primo file selezionato. Il campo accetta solo un file alla volta.'],
+  [134,'    if (!file) return;', 'Guard clause: se l\'utente apre il selettore e lo chiude senza scegliere nulla, esce subito.'],
+  [135,'    imageError.style.display = "none";', 'Nasconde eventuali messaggi di errore precedenti.'],
+  [137,'    if (file.size > MAX_SIZE) {', 'Controlla se il file supera il limite. La validazione avviene PRIMA dell\'invio al server.'],
+  [138,'        imageError.style.display = "block";', 'Mostra il messaggio di errore dimensione.'],
+  [139,'        imageBase64.value = "";', 'Svuota il campo hidden per evitare l\'invio accidentale di dati non validi.'],
+  [140,'        imagePreview.style.display = "none";', 'Nasconde eventuale anteprima precedente.'],
+  [141,'        imageInput.value = "";', 'Resetta il campo file: permette di selezionare di nuovo lo stesso file dopo l\'errore.'],
+  [142,'        return;', 'Interrompe l\'esecuzione: il codice sotto non viene eseguito.'],
+  [144,'    const reader = new FileReader();', 'Crea un FileReader: API del browser per leggere file locali in modo asincrono.'],
+  [145,'    reader.onload = function(e) {', 'Callback eseguita quando FileReader ha finito di leggere il file.'],
+  [146,'        imageBase64.value = e.target.result;', 'e.target.result contiene la stringa base64 completa (es. "data:image/png;base64,iVBOR..."). Salvata nel campo hidden.'],
+  [147,'        imagePreview.src = e.target.result;', 'La stessa stringa base64 è usata come src dell\'img per mostrare l\'anteprima.'],
+  [148,'        imagePreview.style.display = "block";', 'Rende visibile l\'anteprima.'],
+  [149,'        imageName.textContent = "✓ " + file.name;', 'Mostra il nome del file con segno di spunta per feedback visivo.'],
+  [150,'        imageName.style.display = "block";', 'Rende visibile il nome del file.'],
+  [152,'    reader.readAsDataURL(file);', 'Avvia la lettura asincrona del file. Al termine chiama reader.onload con il risultato base64.'],
+],
+
+// ── login.ejs ────────────────────────────────────────────────────────────────
+login: [
+  [13, '.login-card { background-color: rgba(10,10,20,0.9); border: 2px solid #0dcaf0; border-radius: 8px; }', 'Scheda login: sfondo scuro semitrasparente con bordo azzurro.'],
+  [17, '.form-control { background-color: rgba(67,67,67,0.8) !important; color: #ffffff !important; }', 'Campi input con sfondo grigio scuro e testo bianco.'],
+  [20, '.form-control:focus { border-color: #0dcaf0; ... }', 'Bordo azzurro al focus con ombra per indicatore visivo.'],
+  [21, '.alert { background-color: rgba(220,53,69,0.9); color: white; }', 'Alert di errore: rosso semitrasparente con testo bianco.'],
+  [22, 'a { color: #0dcaf0 !important; text-decoration: none; }', 'Link in azzurro senza sottolineatura di default.'],
+  [37, '<nav class="navbar navbar-dark">', 'Navbar semplificata (solo logo, senza menu espandibile) perché l\'utente non è loggato.'],
+  [46, '<% if (error) { %>', 'EJS: mostra il blocco di errore solo se il server ha passato un messaggio di errore. null = nessun errore.'],
+  [47, '    <div class="alert alert-danger"><%= error %></div>', 'Mostra il messaggio di errore (es. "Credenziali errate") in un box rosso.'],
+  [49, '<form action="/login" method="POST">', 'Form che invia i dati alla route POST /login quando si clicca il pulsante.'],
+  [51, '<input type="text" name="username" ... required>', 'Campo username: obbligatorio, nessun autocomplete specifico.'],
+  [54, '<input type="password" name="password" ... required>', 'Campo password: type="password" nasconde i caratteri mentre si digita.'],
+  [56, '<button type="submit" class="btn btn-primary btn-lg">Accedi</button>', 'Pulsante di invio del form. type="submit" invia il form al server.'],
+  [58, '<p>Sei nuovo? <a href="/signup">Registrati</a></p>', 'Link per chi non ha ancora un account. Evita che l\'utente rimanga bloccato sulla pagina di login.'],
+],
+
+// ── signup.ejs ───────────────────────────────────────────────────────────────
+signup: [
+  [13, '.signup-card { background-color: rgba(10,10,20,0.9); border: 2px solid #0dcaf0; border-radius: 8px; }', 'Scheda registrazione: stesso stile della scheda login per coerenza visiva.'],
+  [17, '.form-control { background-color: rgba(67,67,67,0.8) !important; color: #ffffff !important; }', 'Campi input scuri.'],
+  [20, '.form-control:focus { border-color: #0dcaf0; ... }', 'Bordo azzurro al focus.'],
+  [46, '<% if (error) { %>', 'EJS: mostra l\'errore solo se presente (es. "Username già in uso").'],
+  [47, '    <div class="alert alert-danger"><%= error %></div>', 'Box errore rosso con il messaggio specifico.'],
+  [49, '<form action="/signup" method="POST">', 'Form che invia i dati alla route POST /signup.'],
+  [51, '<input type="text" name="username" ... required>', 'Campo username obbligatorio.'],
+  [54, '<input type="password" name="password" ... required>', 'Campo password obbligatorio con mascheratura caratteri.'],
+  [56, '<button type="submit" class="btn btn-primary btn-lg">Registrati</button>', 'Pulsante di registrazione.'],
+  [58, '<p>Hai già un account? <a href="/login">Accedi</a></p>', 'Link per chi ha già un account. Facilita la navigazione tra login e registrazione.'],
+],
+
+// ── chat.ejs ─────────────────────────────────────────────────────────────────
+chat: [
+  [12, '.chat-container { background-color: rgba(10,10,20,0.9); height: 80vh; display: flex; flex-direction: column; }', 'Contenitore principale chat: occupa l\'80% dell\'altezza schermo, layout colonna verticale.'],
+  [19, '#messages { flex-grow: 1; overflow-y: auto; ... }', 'Area messaggi: si espande per occupare tutto lo spazio disponibile. overflow-y:auto aggiunge lo scroll verticale.'],
+  [26, '.message { padding: 8px 12px; border-radius: 8px; max-width: 80%; word-wrap: break-word; }', 'Stile base di ogni messaggio: forma a palloncino, massimo 80% della larghezza.'],
+  [29, '.my-message { background-color: rgba(13,202,240,0.2); border: 1px solid #0dcaf0; margin-left: auto; }', 'Messaggi propri: sfondo azzurro, allineati a destra (margin-left:auto spinge il blocco a destra).'],
+  [32, '.other-message { background-color: rgba(108,117,125,0.2); border: 1px solid #6c757d; }', 'Messaggi degli altri: sfondo grigio, allineati a sinistra (default).'],
+  [35, '.system-message { text-align: center; max-width: 100%; color: #ffc107; font-style: italic; }', 'Messaggi di sistema: centrati, larghezza piena, colore giallo, in corsivo.'],
+  [51, '#messages::-webkit-scrollbar { width: 8px; }', 'Personalizza la scrollbar per browser Webkit (Chrome, Edge): larghezza 8px.'],
+  [53, '#messages::-webkit-scrollbar-thumb { background: #0dcaf0; border-radius: 4px; }', 'Il cursore della scrollbar è azzurro con angoli arrotondati.'],
+  [88, '<% if (currentUser) { %>', 'EJS: mostra la navbar completa (con link) solo agli utenti loggati.'],
+  [89, 'Chat come <span class="welcome-text"><%= currentUser %></span>', 'Mostra il nome utente nella navbar per chiarire con quale identità si sta chattando.'],
+  [101,'<div id="messages">', 'Contenitore dove JavaScript inserisce dinamicamente i messaggi ricevuti dal WebSocket.'],
+  [102,'<div class="message system-message">Benvenuto nella chat!</div>', 'Messaggio iniziale statico mostrato prima della connessione WebSocket.'],
+  [106,'<form id="messageForm" class="message-form">', 'Form per l\'invio. Il submit viene intercettato da JavaScript per usare WebSocket invece di HTTP.'],
+  [108,'<input type="text" id="messageInput" class="form-control message-input" ... required>', 'Campo testo: autocomplete="off" evita suggerimenti indesiderati nella chat.'],
+  [110,'<button type="submit" class="btn btn-primary">Invia</button>', 'Pulsante invio. Il suo click attiva l\'evento submit del form.'],
+  [169,'const socket = new WebSocket(\'ws://localhost:3000\');', 'Apre la connessione WebSocket. ws:// è il protocollo (diverso da http://): connessione persistente bidirezionale.'],
+  [171,'const currentUser = \'<%= currentUser %>\';', 'EJS inietta il nome utente nel codice JavaScript lato client. Usato per distinguere i propri messaggi.'],
+  [176,'socket.onopen = function() {', 'Callback eseguita quando la connessione WebSocket è stabilita con successo.'],
+  [178,'    addSystemMessage(\'Connesso alla chat live\');', 'Aggiunge un messaggio di sistema visibile all\'utente per confermare la connessione.'],
+  [181,'socket.onmessage = function(event) {', 'Callback eseguita ogni volta che arriva un messaggio dal server WebSocket.'],
+  [183,'    const data = JSON.parse(event.data);', 'Converte il testo JSON in oggetto JavaScript. event.data contiene la stringa inviata dal server.'],
+  [184,'    displayMessage(data);', 'Chiama la funzione che costruisce e aggiunge il messaggio nella UI.'],
+  [185,'    messagesContainer.scrollTop = messagesContainer.scrollHeight;', 'Scrolla automaticamente il div messaggi in fondo dopo ogni nuovo messaggio.'],
+  [191,'socket.onclose = function() {', 'Callback eseguita quando la connessione WebSocket si chiude (es. server riavviato, timeout).'],
+  [193,'    addSystemMessage(\'Disconnesso dalla chat. Ricarica la pagina per riconnetterti.\');', 'Avvisa l\'utente della disconnessione con istruzioni per riconnettersi.'],
+  [196,'socket.onerror = function(error) {', 'Callback per errori WebSocket (es. connessione rifiutata, problemi di rete).'],
+  [198,'    addSystemMessage(\'Errore di connessione. Ricarica la pagina.\');', 'Mostra un messaggio di errore all\'utente.'],
+  [201,'messageForm.addEventListener(\'submit\', function(event) {', 'Intercetta l\'invio del form per inviare via WebSocket invece di fare una richiesta HTTP normale.'],
+  [202,'    event.preventDefault();', 'Blocca il comportamento default del form (che farebbe una navigazione di pagina).'],
+  [203,'    const message = messageInput.value.trim();', 'Prende il testo del messaggio rimuovendo spazi ai bordi.'],
+  [205,'    if (message) { socket.send(JSON.stringify({ type: \'chat\', message })); }', 'Se il testo non è vuoto, invia il messaggio come JSON via WebSocket al server.'],
+  [206,'    messageInput.value = \'\';', 'Svuota il campo di testo dopo l\'invio.'],
+  [216,'    if (event.key === \'Enter\' && !event.shiftKey) {', 'Invio con Enter (senza Shift) simula il submit del form. Shift+Enter potrebbe servire per andare a capo (non implementato).'],
+  [223,'function displayMessage(data) {', 'Costruisce e aggiunge visivamente un messaggio nella UI in base al suo tipo.'],
+  [225,'    if (data.type === \'system\') {', 'Messaggi di sistema (entrata/uscita utenti, notifiche server).'],
+  [232,'    } else if (data.type === \'chat\') {', 'Messaggi di chat: hanno autore e testo.'],
+  [233,'        const isMyMessage = data.username === currentUser;', 'Controlla se il messaggio è dell\'utente corrente per applicare lo stile appropriato (azzurro destra vs grigio sinistra).'],
+  [234,'        messageDiv.className = `message ${isMyMessage ? \'my-message\' : \'other-message\'}`;', 'Imposta la classe CSS in base all\'autore del messaggio.'],
+  [247,'function addSystemMessage(text) {', 'Helper per aggiungere messaggi di sistema (connessione, disconnessione, errori) nella UI.'],
+  [258,'function formatTime(isoString) {', 'Converte una stringa ISO 8601 (es. "2026-03-06T10:30:00.000Z") in orario leggibile (es. "10:30").'],
+  [260,'    return date.toLocaleTimeString(\'it-IT\', { hour: \'2-digit\', minute: \'2-digit\' });', 'Formatta l\'ora in stile italiano con 2 cifre per ore e minuti.'],
+  [266,'function escapeHtml(text) {', 'Sanitizza il testo del messaggio per prevenire attacchi XSS (Cross-Site Scripting).'],
+  [267,'    const div = document.createElement(\'div\');', 'Crea un elemento div temporaneo fuori dal DOM.'],
+  [268,'    div.textContent = text;', 'Assegna il testo: il browser esegue automaticamente l\'escape dei caratteri HTML speciali (<, >, &, ecc.).'],
+  [269,'    return div.innerHTML;', 'Restituisce il testo con i caratteri speciali convertiti in entità HTML sicure (es. < → &lt;).'],
+  [273,'window.addEventListener(\'load\', function() { messagesContainer.scrollTop = messagesContainer.scrollHeight; });', 'Al caricamento completo della pagina, porta lo scroll in fondo all\'area messaggi.'],
+]
+};
+
+// ═══════════════════════════════════════════════
+// RENDERING TABELLE
+// ═══════════════════════════════════════════════
+function esc(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function renderTable(id, rows) {
+  const t = document.getElementById(id);
+  if (!t) return;
+  let h = '<thead><tr><th style="width:48px">#</th><th style="width:44%">Codice</th><th>Spiegazione</th></tr></thead><tbody>';
+  rows.forEach(([n, code, exp]) => {
+    h += `<tr><td>${n}</td><td>${esc(code)}</td><td>${esc(exp)}</td></tr>`;
+  });
+  t.innerHTML = h + '</tbody>';
+}
+renderTable('tbl-server', DATA.server);
+renderTable('tbl-index',  DATA.index);
+renderTable('tbl-post',   DATA.post);
+renderTable('tbl-login',  DATA.login);
+renderTable('tbl-signup', DATA.signup);
+renderTable('tbl-chat',   DATA.chat);
+
+// ═══════════════════════════════════════════════
+// NAV SIDEBAR
+// ═══════════════════════════════════════════════
+const NAV_USER = [
+  { id:'u1', label:'1. Introduzione', subs:[] },
+  { id:'u2', label:'2. Registrazione e Accesso', subs:[{id:'u2-1',label:'Creare un account'},{id:'u2-2',label:'Accedere'},{id:'u2-3',label:'Uscire'}] },
+  { id:'u3', label:'3. I Post', subs:[{id:'u3-1',label:'Leggere i post'},{id:'u3-2',label:'Pubblicare'},{id:'u3-3',label:'Aggiungere una foto'}] },
+  { id:'u4', label:'4. Interagire', subs:[{id:'u4-1',label:'Mettere like'},{id:'u4-2',label:'Commentare'},{id:'u4-3',label:'Condividere'}] },
+  { id:'u5', label:'5. Chat Live', subs:[] },
+  { id:'u6', label:'6. FAQ', subs:[] },
+];
+const NAV_ARCH = [
+  { id:'a1', label:'1. Architettura', subs:[{id:'a1-1',label:'Descrizione'},{id:'a1-2',label:'Componenti'}] },
+  { id:'a2', label:'2. Analisi Priorità', subs:[{id:'a2-1',label:'Robustezza'},{id:'a2-2',label:'Usabilità'},{id:'a2-3',label:'Portabilità'}] },
+  { id:'a3', label:'3. Design', subs:[{id:'a3-1',label:'Principi'},{id:'a3-2',label:'Scelte architetturali'}] },
+  { id:'a4', label:'4. Codice', subs:[{id:'a4-1',label:'Struttura sorgente'},{id:'a4-2',label:'Route e funzioni'},{id:'a4-3',label:'Funzionalità'},{id:'a4-4',label:'Esempi'},{id:'a4-5',label:'Ottimizzazioni'}] },
+  { id:'a5', label:'5. Testing', subs:[] },
+  { id:'a6', label:'6. Deployment', subs:[] },
+  { id:'a7', label:'7. Manutenzione', subs:[] },
+  { id:'a8', label:'8. Conclusioni', subs:[] },
+  { id:'a9', label:'9. Riga per Riga', subs:[{id:'a9-1',label:'server.js'},{id:'a9-2',label:'index.ejs'},{id:'a9-3',label:'post.ejs'},{id:'a9-4',label:'login.ejs'},{id:'a9-5',label:'signup.ejs'},{id:'a9-6',label:'chat.ejs'}] },
+];
+
+let currentView = 'user';
+
+function buildNav(navData, style) {
+  const nav = document.getElementById('nav');
+  nav.innerHTML = '';
+  navData.forEach(item => {
+    const sec = document.createElement('div');
+    sec.className = 'nav-section';
+    const hasSubs = item.subs.length > 0;
+    sec.innerHTML = `
+      <div class="nav-h1 ${style}-style${hasSubs ? '' : ' open'}" id="nh-${item.id}" onclick="navClick(this,'${item.id}','${style}')">
+        <span>${item.label}</span>${hasSubs ? '<span class="arrow">▶</span>' : ''}
+      </div>
+      ${hasSubs ? `<div class="nav-sub" id="ns-${item.id}">
+        ${item.subs.map(s=>`<a class="nav-h2" href="#${s.id}" onclick="navH2Click(this,'${style}')">${s.label}</a>`).join('')}
+      </div>` : ''}`;
+    nav.appendChild(sec);
+  });
+}
+
+function navClick(el, id, style) {
+  const sub = document.getElementById('ns-'+id);
+  if (!sub) { scrollTo(id); return; }
+  el.classList.toggle('open');
+  sub.classList.toggle('open');
+  scrollTo(id);
+}
+function navH2Click(el, style) {
+  document.querySelectorAll('.nav-h2').forEach(x => x.classList.remove('active-user','active-arch'));
+  el.classList.add('active-'+style);
+  document.getElementById('sidebar').classList.remove('open');
+}
+function scrollTo(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function switchView(view, tabEl) {
+  currentView = view;
+  document.getElementById('view-user').classList.toggle('active', view==='user');
+  document.getElementById('view-arch').classList.toggle('active', view==='arch');
+  document.querySelectorAll('.view-tab').forEach(t => { t.className = 'view-tab'; });
+  tabEl.classList.add('active-'+view);
+  const bc = document.getElementById('current-section');
+  bc.className = view==='user' ? 'u' : 'a';
+  bc.textContent = view==='user' ? 'Guida Utente' : 'Architettura Tecnica';
+  buildNav(view==='user' ? NAV_USER : NAV_ARCH, view);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+buildNav(NAV_USER, 'user');
+
+// ═══════════════════════════════════════════════
+// SCROLL SPY
+// ═══════════════════════════════════════════════
+const bc = document.getElementById('current-section');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const id = e.target.id;
+    const nav = currentView==='user' ? NAV_USER : NAV_ARCH;
+    const found = nav.find(n => n.id===id || n.subs.some(s=>s.id===id));
+    if (found) bc.textContent = found.label;
+    document.querySelectorAll('.nav-h1').forEach(n => n.classList.remove('active'));
+    const nh = document.getElementById('nh-'+id);
+    if (nh) nh.classList.add('active');
+    else {
+      const parent = nav.find(n=>n.subs.some(s=>s.id===id));
+      if (parent) { const p = document.getElementById('nh-'+parent.id); if(p) p.classList.add('active'); }
+    }
+  });
+}, { rootMargin:'-15% 0px -70% 0px' });
+document.querySelectorAll('.doc-section').forEach(s => obs.observe(s));
+
+// ═══════════════════════════════════════════════
+// RICERCA
+// ═══════════════════════════════════════════════
+let searchTimeout;
+function searchDoc(q) {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    document.querySelectorAll('mark').forEach(m => m.replaceWith(document.createTextNode(m.textContent)));
+    if (!q.trim() || q.length < 2) return;
+    highlightText(document.getElementById('main'), q.trim());
+    const first = document.querySelector('mark');
+    if (first) first.scrollIntoView({ behavior:'smooth', block:'center' });
+  }, 300);
+}
+function highlightText(node, q) {
+  if (node.nodeType === 3) {
+    const idx = node.textContent.toLowerCase().indexOf(q.toLowerCase());
+    if (idx === -1) return;
+    const before = document.createTextNode(node.textContent.slice(0, idx));
+    const mark = document.createElement('mark');
+    mark.textContent = node.textContent.slice(idx, idx + q.length);
+    const after = document.createTextNode(node.textContent.slice(idx + q.length));
+    node.parentNode.replaceChild(after, node);
+    node.parentNode.insertBefore(mark, after);
+    node.parentNode.insertBefore(before, mark);
+  } else if (node.nodeType === 1 && !['SCRIPT','STYLE','INPUT'].includes(node.tagName)) {
+    [...node.childNodes].forEach(c => highlightText(c, q));
+  }
+}
+</script>
+</body>
+</html>
