@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ricerca — Social PostIt</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        /* =====================================================================
+           VARIABILI E RESET – Tema cyberpunk/glass
+           ===================================================================== */
+        :root {
+            --bg:       #06080f;
+            --bg2:      #0a0d1a;
+            --cyan:     #00e5ff;
+            --pink:     #ff2070;
+            --green:    #00ff9f;
+            --text:     #c8d6e5;
+            --muted:    #566a80;
+            --border:   rgba(0, 229, 255, 0.18);
+            --glow-c:   rgba(0, 229, 255, 0.35);
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            background-color: var(--bg);
+            min-height: 100vh;
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+            background-size: 44px 44px;
+            z-index: -2;
+            pointer-events: none;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg, transparent, transparent 3px,
+                rgba(0,0,0,0.12) 3px, rgba(0,0,0,0.12) 4px
+            );
+            z-index: -1;
+            pointer-events: none;
+        }
+        .cyber-orb {
+            position: fixed;
+            width: 700px;
+            height: 700px;
+            border-radius: 50%;
+            background: radial-gradient(ellipse, rgba(0,229,255,0.07) 0%, transparent 70%);
+            top: -300px;
+            right: -250px;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* =====================================================================
+           NAVBAR – Glass
+           ===================================================================== */
+        .navbar {
+            background: rgba(6, 8, 15, 0.7) !important;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 0;
+        }
+        .navbar-brand {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--cyan) !important;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .navbar-brand span {
+            color: var(--pink);
+        }
+        .navbar-brand::before {
+            content: '//';
+            color: var(--muted);
+            margin-right: 8px;
+        }
+        .btn-cyber {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-radius: 4px;
+            padding: 6px 16px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        .btn-cyber-cyan {
+            background: transparent;
+            color: var(--cyan);
+            border: 1px solid rgba(0,229,255,0.5);
+        }
+        .btn-cyber-cyan:hover {
+            background: rgba(0,229,255,0.12);
+            border-color: var(--cyan);
+            box-shadow: 0 0 16px rgba(0,229,255,0.3);
+        }
+
+        /* =====================================================================
+           CONTENUTO
+           ===================================================================== */
+        .content-wrap {
+            max-width: 820px;
+            margin: 40px auto;
+            padding: 0 16px 80px;
+        }
+
+        .search-header {
+            margin-bottom: 40px;
+        }
+        .search-header h1 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+        .search-header .subtitle {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            color: var(--muted);
+            letter-spacing: 2px;
+        }
+
+        /* Tab risultati */
+        .search-tabs {
+            display: flex;
+            gap: 12px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 1px;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            color: var(--cyan);
+            border-bottom-color: var(--cyan);
+        }
+        .tab-btn:hover {
+            color: var(--text);
+        }
+
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Card utente */
+        .user-card {
+            background: rgba(10, 13, 26, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            transition: border-color 0.2s;
+        }
+        .user-card:hover {
+            border-color: rgba(0,229,255,0.35);
+        }
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--cyan), var(--pink));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--bg);
+            flex-shrink: 0;
+        }
+        .user-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .user-name {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 2px;
+        }
+        .user-bio {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+        .user-stats {
+            display: flex;
+            gap: 12px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            color: var(--muted);
+        }
+        .user-actions {
+            flex-shrink: 0;
+        }
+        .btn-follow {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,229,255,0.5);
+            background: transparent;
+            color: var(--cyan);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-follow:hover {
+            background: rgba(0,229,255,0.1);
+        }
+
+        /* Card post */
+        .post-card {
+            background: rgba(10, 13, 26, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: border-color 0.2s;
+        }
+        .post-card:hover {
+            border-color: rgba(0,229,255,0.35);
+        }
+        .post-card a {
+            text-decoration: none;
+            color: inherit;
+        }
+        .post-card a:hover .post-title {
+            color: var(--cyan);
+        }
+        .post-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+        .post-author {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            color: var(--cyan);
+            margin-bottom: 4px;
+        }
+
+        /* Stato vuoto */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.4;
+        }
+        .empty-state p {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            color: var(--muted);
+            letter-spacing: 1px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0,229,255,0.3);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="cyber-orb"></div>
+
+    <!-- =====================================================================
+         NAVBAR
+         ===================================================================== -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Social <span>PostIt</span></a>
+            <div class="d-flex align-items-center gap-2">
+                <% if (currentUser) { %>
+                    <a href="/" class="btn btn-cyber btn-cyber-cyan btn-sm">Home</a>
+                    <a href="/logout" class="btn btn-cyber btn-cyber-pink btn-sm">Esci</a>
+                <% } else { %>
+                    <a href="/login" class="btn btn-cyber btn-cyber-cyan btn-sm">Accedi</a>
+                <% } %>
+            </div>
+        </div>
+    </nav>
+
+    <!-- =====================================================================
+         CONTENUTO RICERCA
+         ===================================================================== -->
+    <div class="content-wrap">
+        <div class="search-header">
+            <h1>
+                <% if (query) { %>
+                    Risultati per "<%= query %>"
+                <% } else { %>
+                    Cerca Post o Profili
+                <% } %>
+            </h1>
+            <div class="subtitle">
+                <% if (query) { %>
+                    <%= (results.users.length + results.posts.length) %> risultati trovati
+                <% } else { %>
+                    // UTILIZZA LA BARRA DI RICERCA PER INIZIARE
+                <% } %>
+            </div>
+        </div>
+
+        <% if (query && (results.users.length > 0 || results.posts.length > 0)) { %>
+            <div class="search-tabs">
+                <button class="tab-btn active" onclick="switchTab('users')">
+                    👤 Profili (<%= results.users.length %>)
+                </button>
+                <button class="tab-btn" onclick="switchTab('posts')">
+                    📝 Post (<%= results.posts.length %>)
+                </button>
+            </div>
+
+            <!-- Tab Profili -->
+            <div class="tab-content active" id="tab-users">
+                <% if (results.users.length > 0) { %>
+                    <% results.users.forEach(user => { %>
+                        <div class="user-card">
+                            <div class="user-avatar"><%= user.avatar %></div>
+                            <div class="user-info">
+                                <a href="/profile/<%= user.username %>" style="text-decoration: none;">
+                                    <div class="user-name"><%= user.username %></div>
+                                </a>
+                                <% if (user.bio) { %>
+                                    <div class="user-bio"><%= user.bio.substring(0, 80) %></div>
+                                <% } %>
+                                <div class="user-stats">
+                                    <span><%= user.followers %> follower</span>
+                                    <span><%= user.following %> following</span>
+                                </div>
+                            </div>
+                            <% if (currentUser && currentUser !== user.username) { %>
+                                <div class="user-actions">
+                                    <button class="btn-follow" onclick="toggleFollow('<%= user.username %>')">+ Segui</button>
+                                </div>
+                            <% } %>
+                        </div>
+                    <% }) %>
+                <% } %>
+            </div>
+
+            <!-- Tab Post -->
+            <div class="tab-content" id="tab-posts">
+                <% if (results.posts.length > 0) { %>
+                    <% results.posts.forEach(post => { %>
+                        <a href="/#post-<%= post.index %>" style="text-decoration: none;">
+                            <div class="post-card">
+                                <div class="post-title"><%= post.title %></div>
+                                <div class="post-author">di <%= post.author %></div>
+                            </div>
+                        </a>
+                    <% }) %>
+                <% } %>
+            </div>
+
+        <% } else if (query) { %>
+            <div class="empty-state">
+                <div class="icon">🔍</div>
+                <p>// NESSUN RISULTATO TROVATO</p>
+                <p style="margin-top: 8px;">Prova con una ricerca diversa</p>
+            </div>
+        <% } else { %>
+            <div class="empty-state">
+                <div class="icon">🔎</div>
+                <p>// INSERISCI UN TERMINE DI RICERCA</p>
+            </div>
+        <% } %>
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function toggleFollow(username) {
+            fetch(`/follow/${username}`, { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    }
+                });
+        }
+    </script>
+</body>
+</html>

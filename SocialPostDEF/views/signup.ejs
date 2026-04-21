@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social PostIt — Registrazione</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        /* =====================================================================
+           VARIABILI E RESET – Tema cyberpunk/glass
+           ===================================================================== */
+        :root {
+            --bg:       #06080f;
+            --bg2:      #0a0d1a;
+            --cyan:     #00e5ff;
+            --pink:     #ff2070;
+            --text:     #c8d6e5;
+            --muted:    #566a80;
+            --border:   rgba(0, 229, 255, 0.18);
+            --glow-c:   rgba(0, 229, 255, 0.35);
+            --glow-p:   rgba(255, 32, 112, 0.35);
+            --danger:   #ff4b6a;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            background-color: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+            background-size: 44px 44px;
+            z-index: -2;
+            pointer-events: none;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg, transparent, transparent 3px,
+                rgba(0,0,0,0.12) 3px, rgba(0,0,0,0.12) 4px
+            );
+            z-index: -1;
+            pointer-events: none;
+        }
+        .cyber-orb {
+            position: fixed;
+            width: 700px;
+            height: 700px;
+            border-radius: 50%;
+            background: radial-gradient(ellipse, rgba(255,32,112,0.05) 0%, transparent 70%);
+            top: -300px;
+            left: -250px;
+            z-index: -1;
+            pointer-events: none;
+            animation: orb-pulse 8s ease-in-out infinite;
+        }
+        .cyber-orb-2 {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(ellipse, rgba(0,229,255,0.04) 0%, transparent 70%);
+            bottom: -200px;
+            right: -150px;
+            z-index: -1;
+            pointer-events: none;
+            animation: orb-pulse 10s ease-in-out infinite reverse;
+        }
+        @keyframes orb-pulse {
+            0%,100% { opacity:1; transform:scale(1); }
+            50%      { opacity:0.5; transform:scale(1.08); }
+        }
+
+        /* =====================================================================
+           NAVBAR – Glass
+           ===================================================================== */
+        .navbar {
+            background: rgba(6,8,15,0.7) !important;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 0;
+        }
+        .navbar-brand {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--cyan) !important;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 0 0 12px var(--glow-c);
+        }
+        .navbar-brand span {
+            color: var(--pink);
+            text-shadow: 0 0 12px var(--glow-p);
+        }
+        .navbar-brand::before {
+            content: '//';
+            color: var(--muted);
+            margin-right: 8px;
+            font-size: 14px;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        /* =====================================================================
+           CARD REGISTRAZIONE – Glass
+           ===================================================================== */
+        .auth-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 16px;
+        }
+        .auth-card {
+            width: 100%;
+            max-width: 420px;
+            background: rgba(10, 13, 26, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 40px 36px;
+            position: relative;
+            overflow: hidden;
+            animation: slide-in 0.4s ease both;
+        }
+        @keyframes slide-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .auth-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--pink), var(--cyan));
+        }
+        .auth-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 2px;
+            height: 80px;
+            background: linear-gradient(180deg, var(--pink), transparent);
+        }
+
+        .auth-label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            color: var(--muted);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .auth-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: 1px;
+            margin-bottom: 28px;
+        }
+        .auth-title span {
+            color: var(--pink);
+            text-shadow: 0 0 12px var(--glow-p);
+        }
+
+        /* Campi del form */
+        .form-field {
+            margin-bottom: 18px;
+        }
+        .form-field label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            color: var(--muted);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 7px;
+        }
+        .form-control {
+            background: rgba(14,18,37,0.6) !important;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(86,106,128,0.4) !important;
+            border-radius: 4px !important;
+            color: var(--text) !important;
+            font-size: 14px !important;
+            padding: 10px 14px !important;
+            transition: border-color 0.2s, box-shadow 0.2s !important;
+            width: 100%;
+        }
+        .form-control::placeholder {
+            color: var(--muted) !important;
+        }
+        .form-control:focus {
+            border-color: var(--pink) !important;
+            box-shadow: 0 0 0 3px rgba(255,32,112,0.1) !important;
+            outline: none !important;
+            background: rgba(255,32,112,0.03) !important;
+        }
+
+        /* Indicatore forza password */
+        .password-strength {
+            margin-top: 6px;
+            height: 3px;
+            border-radius: 2px;
+            background: rgba(86,106,128,0.2);
+            overflow: hidden;
+        }
+        .password-strength-bar {
+            height: 100%;
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.3s, background 0.3s;
+        }
+        .strength-label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 9px;
+            color: var(--muted);
+            margin-top: 3px;
+            letter-spacing: 1px;
+        }
+
+        /* Pulsante submit */
+        .btn-submit {
+            width: 100%;
+            padding: 11px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #fff;
+            background: var(--pink);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: box-shadow 0.2s, transform 0.15s;
+            margin-top: 8px;
+        }
+        .btn-submit:hover {
+            box-shadow: 0 0 24px var(--glow-p);
+            transform: translateY(-1px);
+        }
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        /* Messaggio di errore */
+        .auth-error {
+            background: rgba(255,75,106,0.1);
+            border: 1px solid rgba(255,75,106,0.35);
+            border-radius: 4px;
+            padding: 10px 14px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            color: var(--danger);
+            margin-bottom: 20px;
+            letter-spacing: 0.3px;
+            animation: shake 0.4s ease;
+        }
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            20%      { transform: translateX(-6px); }
+            40%      { transform: translateX(6px); }
+            60%      { transform: translateX(-4px); }
+            80%      { transform: translateX(4px); }
+        }
+        .auth-error::before {
+            content: '⚠ ';
+        }
+
+        /* Link login */
+        .auth-footer {
+            margin-top: 22px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--muted);
+        }
+        .auth-footer a {
+            color: var(--cyan) !important;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .auth-footer a:hover {
+            text-decoration: underline;
+            text-shadow: 0 0 8px var(--glow-c);
+        }
+    </style>
+</head>
+<body>
+    <div class="cyber-orb"></div>
+    <div class="cyber-orb-2"></div>
+
+    <!-- =====================================================================
+         NAVBAR
+         ===================================================================== -->
+    <nav class="navbar navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Social <span>PostIt</span></a>
+        </div>
+    </nav>
+
+    <!-- =====================================================================
+         CARD REGISTRAZIONE
+         ===================================================================== -->
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <div class="auth-label">// Nuovo account</div>
+            <div class="auth-title"><span>Registrati</span></div>
+
+            <% if (error) { %>
+                <div class="auth-error"><%= error %></div>
+            <% } %>
+
+            <form action="/signup" method="POST">
+                <div class="form-field">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username"
+                           class="form-control" placeholder="scegli un username"
+                           required autofocus maxlength="30">
+                </div>
+                <div class="form-field">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password"
+                           class="form-control" placeholder="••••••••"
+                           required oninput="checkPasswordStrength(this.value)">
+                    <div class="password-strength">
+                        <div class="password-strength-bar" id="strengthBar"></div>
+                    </div>
+                    <div class="strength-label" id="strengthLabel"></div>
+                </div>
+                <button type="submit" class="btn-submit">Crea account</button>
+            </form>
+
+            <div class="auth-footer">
+                Hai già un account? <a href="/login">Accedi</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // =====================================================================
+        // INDICATORE FORZA PASSWORD
+        // =====================================================================
+        function checkPasswordStrength(pwd) {
+            const bar = document.getElementById('strengthBar');
+            const label = document.getElementById('strengthLabel');
+            let score = 0;
+
+            if (pwd.length >= 6)  score++;
+            if (pwd.length >= 10) score++;
+            if (/[A-Z]/.test(pwd)) score++;
+            if (/[0-9]/.test(pwd)) score++;
+            if (/[^A-Za-z0-9]/.test(pwd)) score++;
+
+            const levels = [
+                { pct: '0%',   color: 'transparent', text: '' },
+                { pct: '20%',  color: '#ff4b6a',     text: 'DEBOLE' },
+                { pct: '45%',  color: '#ff9500',     text: 'DISCRETA' },
+                { pct: '70%',  color: '#ffd600',     text: 'BUONA' },
+                { pct: '85%',  color: '#00ff9f',     text: 'FORTE' },
+                { pct: '100%', color: '#00e5ff',     text: 'OTTIMA' }
+            ];
+
+            const level = levels[score] || levels[0];
+            bar.style.width = level.pct;
+            bar.style.background = level.color;
+            label.textContent = level.text;
+            label.style.color = level.color;
+        }
+    </script>
+</body>
+</html>
