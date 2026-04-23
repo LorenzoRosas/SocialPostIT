@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social PostIt - Registrazione</title>
+    <!-- Bootstrap CSS per layout responsive -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- Font Google: Rajdhani, Share Tech Mono, Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Foglio di stile principale (sfondo unificato con le altre pagine) -->
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="auth-page auth-signup-page">
+    <!-- Aloni decorativi CSS - stessi di tutte le altre pagine -->
+    <div class="cyber-orb"></div>
+    <div class="cyber-orb-2"></div>
+    <div class="cyber-orb-3"></div>
+
+    <!-- ══ NAVBAR ════════════════════════════════════════════════════════════ -->
+    <nav class="navbar navbar-dark">
+        <div class="container">
+            <!-- Logo del sito -->
+            <a class="navbar-brand" href="/">Social <span>PostIt</span></a>
+            <!-- Link utili nella navbar -->
+            <div class="d-flex align-items-center gap-2">
+                <!-- Link alla ricerca -->
+                <a href="/search" class="btn btn-cyber btn-cyber-cyan btn-sm">Ricerca</a>
+                <!-- Link al login per chi ha già un account -->
+                <a href="/login" class="btn btn-cyber btn-cyber-cyan btn-sm">Accedi</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ══ CONTENUTO PRINCIPALE ══════════════════════════════════════════════ -->
+    <main class="auth-shell">
+
+        <!-- Pannello hero con due colonne: testo + form -->
+        <section class="auth-hero-panel glass-panel">
+
+            <!-- Colonna sinistra: titolo descrittivo -->
+            <div class="auth-copy">
+                <!-- Titolo grande della pagina -->
+                <h1 class="auth-display">Crea il tuo profilo</h1>
+            </div>
+
+            <!-- Colonna destra: card con il form di registrazione -->
+            <div class="auth-card">
+
+                <!-- Intestazione della card -->
+                <div class="auth-card-top">
+                    <!-- Etichetta kicker -->
+                    <span class="auth-card-kicker">Signup</span>
+                    <!-- Sottotitolo -->
+                    <h2 class="auth-card-title">Crea il tuo account</h2>
+                </div>
+
+                <!-- Banner di errore (visibile solo se c'è un errore) -->
+                <% if (error) { %>
+                    <div class="auth-error-banner"><%= error %></div>
+                <% } %>
+
+                <!-- Form di registrazione: invia a POST /signup -->
+                <form action="/signup" method="POST" class="auth-form">
+
+                    <!-- Campo username -->
+                    <div class="auth-field">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username"
+                               class="auth-input"
+                               placeholder="scegli un username"
+                               required autofocus maxlength="30">
+                    </div>
+
+                    <!-- Campo password con indicatore di forza -->
+                    <div class="auth-field">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password"
+                               class="auth-input"
+                               placeholder="••••••••"
+                               required
+                               oninput="checkPasswordStrength(this.value)">
+                        <!-- Barra visiva della forza password -->
+                        <div class="password-strength">
+                            <div class="password-strength-bar" id="strengthBar"></div>
+                        </div>
+                        <!-- Testo descrittivo della forza (es. "FORTE") -->
+                        <div class="strength-label" id="strengthLabel"></div>
+                    </div>
+
+                    <!-- Pulsante di submit con stile pink -->
+                    <button type="submit" class="auth-submit auth-submit-pink">Crea account</button>
+                </form>
+
+                <!-- Footer con link al login per chi ha già un account -->
+                <div class="auth-footer-row">
+                    <span>Hai già un account?</span>
+                    <a href="/login">Accedi</a>
+                </div>
+
+            </div>
+            <!-- Fine auth-card -->
+
+        </section>
+        <!-- Fine auth-hero-panel -->
+
+    </main>
+
+    <script>
+        /* ══════════════════════════════════════════════════════════════════════
+           INDICATORE FORZA PASSWORD
+           Valuta la password in tempo reale e aggiorna la barra colorata
+           ══════════════════════════════════════════════════════════════════════ */
+        function checkPasswordStrength(pwd) {
+            // Riferimenti agli elementi della barra e del testo
+            const bar   = document.getElementById('strengthBar');
+            const label = document.getElementById('strengthLabel');
+
+            // Punteggio da 0 a 5 basato su criteri di complessità
+            let score = 0;
+            if (pwd.length >= 6)              score++; // Lunghezza minima
+            if (pwd.length >= 10)             score++; // Lunghezza buona
+            if (/[A-Z]/.test(pwd))            score++; // Ha almeno una maiuscola
+            if (/[0-9]/.test(pwd))            score++; // Ha almeno un numero
+            if (/[^A-Za-z0-9]/.test(pwd))     score++; // Ha caratteri speciali
+
+            // Livelli di forza con percentuale, colore e testo
+            const levels = [
+                { pct: '0%',   color: 'transparent', text: '' },         // 0 criteri
+                { pct: '20%',  color: '#ff4b6a',      text: 'DEBOLE' },   // 1 criterio
+                { pct: '45%',  color: '#ff9500',      text: 'DISCRETA' }, // 2 criteri
+                { pct: '70%',  color: '#ffd600',      text: 'BUONA' },    // 3 criteri
+                { pct: '85%',  color: '#00ff9f',      text: 'FORTE' },    // 4 criteri
+                { pct: '100%', color: '#00e5ff',      text: 'OTTIMA' }    // 5 criteri
+            ];
+
+            // Seleziona il livello corrispondente al punteggio
+            const level = levels[score] || levels[0];
+
+            // Aggiorna la barra con larghezza e colore
+            bar.style.width      = level.pct;
+            bar.style.background = level.color;
+
+            // Aggiorna il testo e il suo colore
+            label.textContent  = level.text;
+            label.style.color  = level.color;
+        }
+    </script>
+</body>
+</html>

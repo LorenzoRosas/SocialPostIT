@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Titolo dinamico con username dell'utente visualizzato -->
+    <title><%= targetUser.username %> - Profilo</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- Font Google -->
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Foglio di stile principale (sfondo unificato) -->
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <!-- Aloni decorativi CSS -->
+    <div class="cyber-orb"></div>
+    <div class="cyber-orb-2"></div>
+    <div class="cyber-orb-3"></div>
+
+    <!-- ══ NAVBAR ════════════════════════════════════════════════════════════ -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <!-- Logo -->
+            <a class="navbar-brand" href="/">Social <span>PostIt</span></a>
+            <!-- Link di navigazione -->
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <!-- Link alla home -->
+                <a href="/" class="btn btn-cyber btn-cyber-cyan btn-sm">Home</a>
+                <!-- Link alla ricerca -->
+                <a href="/search" class="btn btn-cyber btn-cyber-cyan btn-sm">Ricerca</a>
+                <% if (currentUser) { %>
+                    <!-- Per utenti loggati: link a nuovo post e logout -->
+                    <a href="/post" class="btn btn-cyber btn-cyber-green btn-sm">Nuovo Post</a>
+                    <a href="/logout" class="btn btn-cyber btn-cyber-pink btn-sm">Esci</a>
+                <% } else { %>
+                    <!-- Per ospiti: link al login -->
+                    <a href="/login" class="btn btn-cyber btn-cyber-cyan btn-sm">Accedi</a>
+                <% } %>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ══ CONTENUTO PRINCIPALE ══════════════════════════════════════════════ -->
+    <main class="profile-shell">
+
+        <!-- ── CARD HERO DEL PROFILO ──────────────────────────────────────── -->
+        <section class="profile-hero-card">
+
+            <!-- Backdrop decorativo (alone dietro l'avatar, nessuna animazione) -->
+            <div class="profile-hero-backdrop"></div>
+
+            <!-- Griglia: avatar | testo | azioni -->
+            <div class="profile-hero-top">
+
+                <!-- Avatar dell'utente -->
+                <div class="profile-avatar-wrap">
+                    <!-- Lettera iniziale o immagine avatar -->
+                    <div class="profile-avatar"><%= targetUser.avatar %></div>
+                    <!-- Anello decorativo intorno all'avatar -->
+                    <span class="profile-avatar-ring"></span>
+                </div>
+
+                <!-- Sezione testo: nome, bio, meta -->
+                <div class="profile-hero-copy">
+                    <!-- Etichetta: "Il tuo spazio" o "Profilo pubblico" -->
+                    <span class="profile-eyebrow">
+                        <%= isOwnProfile ? "Il tuo spazio" : "Profilo pubblico" %>
+                    </span>
+                    <!-- Nome utente grande -->
+                    <h1 class="profile-display-name"><%= targetUser.username %></h1
+
+                    <!-- Pillole informative: data iscrizione e tipo visita -->
+                    <div class="profile-meta-row">
+                        <span class="profile-meta-pill">Membro dal <%= profileStats.memberSince %></span>
+                        <span class="profile-meta-pill"><%= isOwnProfile ? "Account attivo" : "Visita pubblica" %></span>
+                    </div>
+                </div>
+
+                <!-- Pulsanti azione nel profilo -->
+                <div class="profile-hero-actions">
+                    <!-- Se stai visitando il profilo di un altro: link al tuo profilo -->
+                    <% if (currentUser && !isOwnProfile) { %>
+                        <a href="/profile" class="btn btn-cyber btn-cyber-cyan btn-sm">Il mio profilo</a>
+                    <% } %>
+                    <!-- Link alla ricerca -->
+                    <a href="/search" class="btn btn-cyber btn-cyber-cyan btn-sm">Esplora</a>
+                </div>
+
+            </div>
+            <!-- Fine profile-hero-top -->
+
+            <!-- Griglia statistiche del profilo -->
+            <div class="profile-stat-grid">
+
+                <!-- Card: numero di post pubblicati -->
+                <article class="profile-stat-card">
+                    <span class="profile-stat-label">Post</span>
+                    <strong class="profile-stat-value"><%= profileStats.postCount %></strong>
+                    <p class="profile-stat-note">Timeline personale aggiornata</p>
+                </article>
+
+                <!-- Card: like totali ricevuti -->
+                <article class="profile-stat-card">
+                    <span class="profile-stat-label">Like ricevuti</span>
+                    <strong class="profile-stat-value"><%= profileStats.totalLikes %></strong>
+                    <p class="profile-stat-note">Totale interazioni positive</p>
+                </article>
+
+                <!-- Card: commenti totali ricevuti -->
+                <article class="profile-stat-card">
+                    <span class="profile-stat-label">Commenti</span>
+                    <strong class="profile-stat-value"><%= profileStats.totalComments %></strong>
+                    <p class="profile-stat-note">Conversazioni generate</p>
+                </article>
+
+            </div>
+            <!-- Fine profile-stat-grid -->
+
+        </section>
+        <!-- Fine profile-hero-card -->
+
+        <!-- ── SEZIONE TIMELINE DEI POST ──────────────────────────────────── -->
+        <section class="profile-timeline-section">
+
+            <!-- Intestazione della sezione -->
+            <div class="profile-section-head">
+                <div>
+                    <!-- Etichetta sopra il titolo -->
+                    <span class="profile-section-kicker">Timeline</span>
+                    <!-- Titolo della sezione -->
+                    <h2 class="profile-section-title">Ultimi post pubblicati</h2>
+                </div>
+            </div>
+
+            <% if (userPosts.length > 0) { %>
+                <!-- Griglia dei post dell'utente -->
+                <div class="profile-post-grid">
+                    <% userPosts.forEach((post, index) => { %>
+                        <!-- Card di un singolo post (con delay staggered per l'animazione) -->
+                        <article class="profile-post-card" style="--stagger:<%= index %>;">
+
+                            <!-- Intestazione del post: titolo + link -->
+                            <div class="profile-post-top">
+                                <div>
+                                    <!-- Titolo del post -->
+                                    <h3 class="profile-post-title"><%= post.title || "Senza titolo" %></h3>
+                                    <!-- Data di pubblicazione -->
+                                    <div class="profile-post-date"><%= post.date || "Data non disponibile" %></div>
+                                </div>
+                                <!-- Link per andare al post nella home -->
+                                <a href="/#post-<%= post.index %>" class="profile-post-link">Apri</a>
+                            </div>
+
+                            <!-- Anteprima del contenuto (massimo 220 caratteri) -->
+                            <p class="profile-post-text">
+                                <%= (post.content || "").substring(0, 220) %><% if ((post.content || "").length > 220) { %>...<% } %>
+                            </p>
+
+                            <!-- Tag del post (massimo 4 mostrati) -->
+                            <% if (post.tags && post.tags.length > 0) { %>
+                                <div class="profile-post-tags">
+                                    <% post.tags.slice(0, 4).forEach(tag => { %>
+                                        <span class="profile-post-tag">#<%= tag %></span>
+                                    <% }) %>
+                                </div>
+                            <% } %>
+
+                            <!-- Footer: contatori like e commenti -->
+                            <div class="profile-post-footer">
+                                <span class="profile-post-pill"><%= post.likes ? post.likes.length : 0 %> like</span>
+                                <span class="profile-post-pill"><%= post.comments ? post.comments.length : 0 %> commenti</span>
+                            </div>
+
+                        </article>
+                    <% }) %>
+                </div>
+                <!-- Fine profile-post-grid -->
+
+            <% } else { %>
+                <!-- Stato vuoto: nessun post pubblicato -->
+                <div class="profile-empty-card">
+                    <!-- Badge decorativo -->
+                    <div class="profile-empty-badge">Silenzio creativo</div>
+                    <!-- Titolo empty state -->
+                    <h3 class="profile-empty-title">Nessun post da mostrare.</h3>
+                    <!-- Messaggio differenziato: tuo profilo o altrui -->
+                    <p class="profile-empty-copy">
+                        <%= isOwnProfile
+                            ? "Quando pubblicherai il primo contenuto, apparirà qui nella timeline."
+                            : "Questo utente non ha ancora pubblicato contenuti visibili nella timeline." %>
+                    </p>
+                    <!-- Pulsante per creare il primo post (solo per il proprio profilo) -->
+                    <% if (isOwnProfile) { %>
+                        <a href="/post" class="btn btn-cyber btn-cyber-green btn-sm">Pubblica adesso</a>
+                    <% } %>
+                </div>
+            <% } %>
+
+        </section>
+        <!-- Fine profile-timeline-section -->
+
+    </main>
+</body>
+</html>

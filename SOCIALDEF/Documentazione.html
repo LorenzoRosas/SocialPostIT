@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Social PostIt — Documentazione Completa</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════
+   ROOT VARIABLES
+══════════════════════════════════════════════════════════ */
+:root {
+  --h1:        #7eb8f7;
+  --h2:        #4eca8b;
+  --h3:        #38bdf8;
+  --accent:    #4eca8b;
+  --accent2:   #f7c948;
+  --bg:        #0d1117;
+  --bg2:       #161b27;
+  --bg3:       #0a0e17;
+  --sidebar:   #0f1520;
+  --border:    #1e2d45;
+  --code-bg:   #090d14;
+  --code-fg:   #d4d4d4;
+  --tag-bg:    #0e2030;
+  --tag-col:   #4eca8b;
+  --text:      #dde1ea;
+  --muted:     #6a7690;
+  --danger:    #f87171;
+  --warn:      #f7c948;
+  --info:      #38bdf8;
+  --kw:        #c792ea;
+  --str:       #c3e88d;
+  --num:       #f78c6c;
+  --fn:        #82aaff;
+  --comment:   #546e7a;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Inter', sans-serif; font-size: 15px; color: var(--text); background: var(--bg); }
+
+/* ══════════════════════════════════════════════════════════
+   LANDING PAGE
+══════════════════════════════════════════════════════════ */
+#landing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 50% 0%, #0d2040 0%, var(--bg) 70%);
+  padding: 40px 20px;
+  position: relative;
+  overflow: hidden;
+}
+#landing::before {
+  content: '';
+  position: absolute;
+  top: -200px; left: 50%; transform: translateX(-50%);
+  width: 900px; height: 500px;
+  background: radial-gradient(ellipse, rgba(78,202,139,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.landing-grid-bg {
+  position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(126,184,247,0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(126,184,247,0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+}
+.landing-badge {
+  background: var(--tag-bg); color: var(--tag-col);
+  border: 1px solid rgba(78,202,139,0.3); border-radius: 20px;
+  padding: 5px 18px; font-size: 12px; font-weight: 600;
+  font-family: 'JetBrains Mono', monospace; letter-spacing: 1px;
+  margin-bottom: 28px; text-transform: uppercase;
+  animation: fadeDown 0.6s ease both;
+}
+.landing-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(48px, 8vw, 88px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -2px;
+  text-align: center;
+  color: #fff;
+  margin-bottom: 12px;
+  animation: fadeDown 0.7s ease 0.1s both;
+}
+.landing-title span { color: var(--h2); }
+.landing-sub {
+  font-size: 18px; color: var(--muted); text-align: center;
+  margin-bottom: 14px; max-width: 520px;
+  animation: fadeDown 0.7s ease 0.2s both;
+}
+.landing-meta {
+  font-size: 13px; color: var(--muted); margin-bottom: 60px;
+  font-family: 'JetBrains Mono', monospace;
+  animation: fadeDown 0.7s ease 0.25s both;
+}
+.landing-meta span { color: var(--h2); }
+.landing-cards {
+  display: flex; gap: 24px; flex-wrap: wrap; justify-content: center;
+  animation: fadeUp 0.8s ease 0.35s both;
+}
+.landing-card {
+  width: 320px; cursor: pointer;
+  border-radius: 20px; padding: 36px 30px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+  text-align: left; position: relative; overflow: hidden;
+}
+.landing-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+  border-radius: 20px 20px 0 0;
+}
+.landing-card.user::before  { background: linear-gradient(90deg, var(--h2), #38bdf8); }
+.landing-card.arch::before  { background: linear-gradient(90deg, var(--h1), var(--kw)); }
+.landing-card:hover { transform: translateY(-6px); box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+.landing-card.user:hover { border-color: var(--h2); }
+.landing-card.arch:hover  { border-color: var(--h1); }
+.lc-icon { font-size: 44px; margin-bottom: 20px; display: block; }
+.lc-title {
+  font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 700;
+  margin-bottom: 10px; color: #fff;
+}
+.landing-card.user .lc-title  { color: var(--h2); }
+.landing-card.arch .lc-title  { color: var(--h1); }
+.lc-desc { font-size: 14px; line-height: 1.7; color: var(--muted); margin-bottom: 24px; }
+.lc-cta {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 14px; font-weight: 600; letter-spacing: 0.3px;
+  padding: 10px 22px; border-radius: 10px; border: none; cursor: pointer;
+  transition: all 0.2s;
+}
+.landing-card.user .lc-cta  { background: rgba(78,202,139,0.15); color: var(--h2); }
+.landing-card.arch .lc-cta  { background: rgba(126,184,247,0.15); color: var(--h1); }
+.landing-card:hover .lc-cta { background: rgba(255,255,255,0.12); color: #fff; }
+.lc-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+.lc-chip {
+  font-size: 11px; padding: 3px 10px; border-radius: 10px;
+  font-family: 'JetBrains Mono', monospace; font-weight: 500;
+  background: var(--bg3); color: var(--muted); border: 1px solid var(--border);
+}
+@keyframes fadeDown { from { opacity:0; transform:translateY(-18px); } to { opacity:1; transform:none; } }
+@keyframes fadeUp   { from { opacity:0; transform:translateY(18px);  } to { opacity:1; transform:none; } }
+
+/* ══════════════════════════════════════════════════════════
+   DOC VIEWS (hidden by default)
+══════════════════════════════════════════════════════════ */
+.doc-view { display: none; }
+.doc-view.active { display: flex; min-height: 100vh; }
+
+/* ══════════════════════════════════════════════════════════
+   SIDEBAR
+══════════════════════════════════════════════════════════ */
+#sidebar {
+  width: 290px; min-width: 290px;
+  background: var(--sidebar);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  position: fixed; top: 0; left: -290px;
+  height: 100vh; z-index: 200;
+  transition: left 0.28s cubic-bezier(0.4,0,0.2,1);
+}
+#sidebar.open { left: 0; }
+#sidebar-header {
+  padding: 20px 18px 14px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, #0a1525 0%, #0e1e35 100%);
+}
+.sidebar-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 17px; font-weight: 800;
+  color: var(--h1); letter-spacing: 0.5px;
+}
+.sidebar-ver { font-size: 11px; color: var(--muted); margin-top: 3px; font-family: 'JetBrains Mono', monospace; }
+.sidebar-mode-badge {
+  display: inline-block; margin-top: 8px;
+  font-size: 10px; padding: 2px 10px; border-radius: 10px;
+  font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+}
+.sidebar-mode-badge.user { background: rgba(78,202,139,0.15); color: var(--h2); border: 1px solid rgba(78,202,139,0.3); }
+.sidebar-mode-badge.arch { background: rgba(126,184,247,0.15); color: var(--h1); border: 1px solid rgba(126,184,247,0.3); }
+
+#search-box { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+#search-box input {
+  width: 100%; padding: 7px 11px;
+  border: 1px solid var(--border); border-radius: 7px;
+  font-family: 'Inter', sans-serif; font-size: 13px;
+  outline: none; background: var(--bg2); color: var(--text);
+}
+#search-box input::placeholder { color: var(--muted); }
+#search-box input:focus { border-color: var(--h2); }
+
+#nav { overflow-y: auto; flex: 1; padding: 6px 0 20px; scrollbar-width: thin; scrollbar-color: #1e2d45 transparent; }
+.nav-section { margin-bottom: 1px; }
+.nav-h1 {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 9px 16px; font-size: 13px; font-weight: 700;
+  color: var(--h1); cursor: pointer; transition: background 0.15s; user-select: none;
+}
+.nav-h1:hover { background: #111b2e; }
+.nav-h1.active { background: #0e1d30; }
+.nav-h1 .arrow { font-size: 9px; transition: transform 0.2s; color: var(--muted); }
+.nav-h1.open .arrow { transform: rotate(90deg); }
+.nav-sub { display: none; }
+.nav-sub.open { display: block; }
+.nav-h2 {
+  display: block; padding: 6px 16px 6px 28px;
+  font-size: 12.5px; color: var(--muted);
+  cursor: pointer; transition: background 0.12s; text-decoration: none;
+}
+.nav-h2:hover { background: #111b2e; color: var(--h2); }
+.nav-h2.active { color: var(--h2); font-weight: 600; background: #0b1c14; border-left: 2px solid var(--h2); padding-left: 26px; }
+.nav-h3 {
+  display: block; padding: 5px 16px 5px 40px;
+  font-size: 12px; color: #4a5870;
+  cursor: pointer; transition: background 0.12s; text-decoration: none;
+}
+.nav-h3:hover { background: #111b2e; color: var(--muted); }
+.nav-h3.active { color: var(--muted); background: #0a1520; }
+
+.sidebar-footer {
+  padding: 12px 16px; border-top: 1px solid var(--border);
+  display: flex; gap: 8px;
+}
+.sidebar-btn {
+  flex: 1; padding: 7px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--bg2); color: var(--muted); cursor: pointer;
+  font-size: 12px; font-family: 'Inter', sans-serif; transition: all 0.15s;
+  text-align: center;
+}
+.sidebar-btn:hover { border-color: var(--h2); color: var(--h2); }
+
+/* ══════════════════════════════════════════════════════════
+   TOPBAR
+══════════════════════════════════════════════════════════ */
+#topbar {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px;
+  background: rgba(13,17,23,0.96); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 20px;
+  z-index: 100; gap: 14px;
+}
+#topbar-hamburger {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: var(--bg2); border: 1px solid var(--border);
+  cursor: pointer; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 4px;
+  transition: border-color 0.15s;
+}
+#topbar-hamburger:hover { border-color: var(--h2); }
+#topbar-hamburger span { display: block; width: 16px; height: 2px; background: var(--muted); border-radius: 2px; }
+.topbar-crumb { font-size: 13px; color: var(--muted); }
+.topbar-crumb b { color: var(--text); font-weight: 600; }
+#topbar-home {
+  margin-left: auto; padding: 6px 14px; border-radius: 8px;
+  background: var(--bg2); border: 1px solid var(--border);
+  color: var(--muted); cursor: pointer; font-size: 12px;
+  font-family: 'Inter', sans-serif; transition: all 0.15s;
+  text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+}
+#topbar-home:hover { border-color: var(--h2); color: var(--h2); }
+.overlay-bg {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5); z-index: 150;
+}
+.overlay-bg.active { display: block; }
+
+/* ══════════════════════════════════════════════════════════
+   MAIN CONTENT
+══════════════════════════════════════════════════════════ */
+#main {
+  flex: 1; padding: 76px 60px 100px 60px;
+  max-width: 1000px;
+}
+#main-inner { max-width: 840px; }
+
+/* ══════════════════════════════════════════════════════════
+   COVER
+══════════════════════════════════════════════════════════ */
+#cover {
+  text-align: center; padding: 60px 20px 50px;
+  border-bottom: 1px solid var(--border); margin-bottom: 56px;
+}
+.cover-title {
+  font-family: 'Syne', sans-serif; font-size: 54px; font-weight: 800;
+  color: var(--h1); letter-spacing: -1px; line-height: 1;
+}
+.cover-title span { color: var(--h2); }
+.cover-sub { font-size: 18px; color: var(--h2); font-weight: 600; margin-top: 12px; }
+.cover-author { font-size: 14px; color: var(--muted); margin-top: 6px; font-style: italic; }
+.cover-tags { margin-top: 20px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.tag {
+  background: var(--tag-bg); color: var(--tag-col);
+  border: 1px solid rgba(78,202,139,0.2); border-radius: 20px;
+  padding: 4px 14px; font-size: 12px; font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+}
+.cover-meta { margin-top: 20px; font-size: 13px; color: var(--muted); }
+
+/* ══════════════════════════════════════════════════════════
+   TOC
+══════════════════════════════════════════════════════════ */
+#toc {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 14px; padding: 28px 34px; margin-bottom: 56px;
+}
+#toc h2 { font-size: 16px; color: var(--h1); margin-bottom: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+#toc ol { padding-left: 20px; }
+#toc > ol > li { margin-bottom: 8px; font-weight: 600; font-size: 14px; }
+#toc > ol > li > a { color: var(--h1); text-decoration: none; }
+#toc > ol > li > a:hover { color: var(--h2); text-decoration: underline; }
+#toc ol ol { padding-left: 18px; margin-top: 5px; }
+#toc ol ol li { font-weight: 400; font-size: 13px; margin-bottom: 3px; }
+#toc ol ol li a { color: var(--muted); text-decoration: none; }
+#toc ol ol li a:hover { color: var(--h2); text-decoration: underline; }
+
+/* ══════════════════════════════════════════════════════════
+   SECTIONS
+══════════════════════════════════════════════════════════ */
+.doc-section { margin-bottom: 68px; scroll-margin-top: 68px; }
+h1.doc-h1 {
+  font-family: 'Syne', sans-serif; font-size: 28px; color: var(--h1); font-weight: 700;
+  border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 22px;
+  display: flex; align-items: center; gap: 10px;
+}
+h1.doc-h1 .section-num {
+  font-size: 13px; font-family: 'JetBrains Mono', monospace;
+  background: var(--tag-bg); color: var(--tag-col);
+  border: 1px solid rgba(78,202,139,0.3); border-radius: 6px;
+  padding: 2px 9px; font-weight: 400;
+}
+h2.doc-h2 { font-size: 20px; color: var(--h2); font-weight: 700; margin: 30px 0 12px; }
+h3.doc-h3 { font-size: 16px; color: var(--h3); font-weight: 700; margin: 22px 0 8px; }
+p.doc-p { line-height: 1.8; color: var(--text); margin-bottom: 12px; }
+ul.doc-ul { padding-left: 22px; margin-bottom: 14px; }
+ul.doc-ul li { line-height: 1.75; color: var(--text); margin-bottom: 6px; list-style-type: disc; }
+ul.doc-ul li strong { color: var(--h2); }
+ol.doc-ol { padding-left: 22px; margin-bottom: 14px; }
+ol.doc-ol li { line-height: 1.75; color: var(--text); margin-bottom: 6px; }
+
+/* ══════════════════════════════════════════════════════════
+   CALLOUTS
+══════════════════════════════════════════════════════════ */
+.callout {
+  border-radius: 10px; padding: 14px 18px; margin: 14px 0 18px;
+  display: flex; gap: 12px; align-items: flex-start;
+  border-left: 3px solid;
+}
+.callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.callout-body { font-size: 14px; line-height: 1.7; }
+.callout-body strong { display: block; margin-bottom: 3px; }
+.callout.info  { background: rgba(56,189,248,0.07); border-color: var(--info);   }
+.callout.info  .callout-body { color: #a9d9f0; }
+.callout.warn  { background: rgba(247,201,72,0.07);  border-color: var(--warn);   }
+.callout.warn  .callout-body { color: #f0dfa9; }
+.callout.ok    { background: rgba(78,202,139,0.07);  border-color: var(--accent); }
+.callout.ok    .callout-body { color: #a9f0cf; }
+.callout.danger{ background: rgba(248,113,113,0.07); border-color: var(--danger); }
+.callout.danger .callout-body { color: #f0a9a9; }
+
+/* ══════════════════════════════════════════════════════════
+   CODE BLOCKS
+══════════════════════════════════════════════════════════ */
+.code-wrap {
+  border-radius: 11px; overflow: hidden; margin: 14px 0 18px;
+  border: 1px solid var(--border);
+}
+.code-header {
+  background: #090d14; padding: 8px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+.code-lang {
+  font-size: 11px; font-family: 'JetBrains Mono', monospace;
+  color: var(--tag-col); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+}
+.code-file {
+  font-size: 11px; font-family: 'JetBrains Mono', monospace;
+  color: var(--muted);
+}
+.doc-code-block {
+  background: var(--code-bg); color: var(--code-fg);
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  padding: 16px 18px; overflow-x: auto; line-height: 1.7;
+  white-space: pre; margin: 0;
+}
+code {
+  font-family: 'JetBrains Mono', monospace; background: #0e1c2e;
+  color: var(--h2); padding: 1px 6px; border-radius: 4px; font-size: 13px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   CODE TABLE (riga per riga)
+══════════════════════════════════════════════════════════ */
+.code-table-wrap {
+  overflow-x: auto; margin: 14px 0 24px;
+  border-radius: 10px; border: 1px solid var(--border);
+}
+table.code-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.code-table thead tr { background: #080d18; }
+table.code-table thead th {
+  padding: 10px 14px; text-align: left;
+  font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12px;
+  color: var(--h1); border-bottom: 1px solid var(--border);
+}
+table.code-table tbody tr { border-bottom: 1px solid #111a2a; transition: background 0.1s; }
+table.code-table tbody tr:hover { background: #0e1725; }
+table.code-table tbody tr:last-child { border-bottom: none; }
+table.code-table td { padding: 9px 14px; vertical-align: top; }
+table.code-table td:first-child {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  color: var(--muted); width: 42px; text-align: right; user-select: none;
+}
+table.code-table td:nth-child(2) {
+  font-family: 'JetBrains Mono', monospace; font-size: 12.5px;
+  color: var(--fn); width: 46%; word-break: break-all;
+}
+table.code-table td:nth-child(3) { color: var(--text); line-height: 1.65; }
+
+/* ══════════════════════════════════════════════════════════
+   INFO TABLE
+══════════════════════════════════════════════════════════ */
+.info-table-wrap { overflow-x: auto; margin: 14px 0 20px; border-radius: 10px; border: 1px solid var(--border); }
+table.info-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.info-table thead tr { background: #080d18; }
+table.info-table thead th {
+  padding: 10px 14px; text-align: left; font-weight: 600; font-size: 13px;
+  color: var(--h1); border-bottom: 1px solid var(--border);
+}
+table.info-table tbody tr { border-bottom: 1px solid #111a2a; }
+table.info-table tbody tr:hover { background: #0e1725; }
+table.info-table tbody tr:last-child { border-bottom: none; }
+table.info-table td { padding: 9px 14px; vertical-align: top; line-height: 1.6; }
+table.info-table td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--h2); white-space: nowrap; }
+table.info-table td:nth-child(2) { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--info); }
+table.info-table td:nth-child(3) { color: var(--text); }
+
+/* ══════════════════════════════════════════════════════════
+   ARCH DIAGRAM BOXES
+══════════════════════════════════════════════════════════ */
+.arch-flow {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 24px; margin: 14px 0 20px;
+  display: flex; flex-direction: column; gap: 0;
+}
+.arch-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.arch-box {
+  border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600;
+  font-family: 'JetBrains Mono', monospace; white-space: nowrap;
+}
+.arch-box.client  { background: rgba(126,184,247,0.1); border: 1px solid rgba(126,184,247,0.3); color: var(--h1); }
+.arch-box.server  { background: rgba(78,202,139,0.1);  border: 1px solid rgba(78,202,139,0.3);  color: var(--h2); }
+.arch-box.store   { background: rgba(247,201,72,0.1);  border: 1px solid rgba(247,201,72,0.3);  color: var(--warn); }
+.arch-box.proto   { background: rgba(192,132,252,0.1); border: 1px solid rgba(192,132,252,0.3); color: var(--kw); }
+.arch-box.view    { background: rgba(56,189,248,0.1);  border: 1px solid rgba(56,189,248,0.3);  color: var(--info); }
+.arch-arrow { color: var(--muted); font-size: 18px; }
+.arch-label { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+/* ══════════════════════════════════════════════════════════
+   ROUTE BADGE
+══════════════════════════════════════════════════════════ */
+.route-list { display: flex; flex-direction: column; gap: 10px; margin: 12px 0 18px; }
+.route-item {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 9px; padding: 12px 16px;
+  display: flex; align-items: flex-start; gap: 14px;
+}
+.route-method {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+  padding: 3px 9px; border-radius: 5px; white-space: nowrap; margin-top: 1px;
+}
+.route-method.get  { background: rgba(78,202,139,0.15);  color: var(--h2); }
+.route-method.post { background: rgba(126,184,247,0.15); color: var(--h1); }
+.route-path { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--h3); font-weight: 600; }
+.route-desc { font-size: 13px; color: var(--muted); margin-top: 2px; line-height: 1.6; }
+.route-body { flex: 1; }
+
+/* ══════════════════════════════════════════════════════════
+   MARK (search highlight)
+══════════════════════════════════════════════════════════ */
+mark { background: rgba(247,201,72,0.35); color: #fff; border-radius: 2px; padding: 0 2px; }
+
+/* ══════════════════════════════════════════════════════════
+   STEP BLOCKS
+══════════════════════════════════════════════════════════ */
+.steps { counter-reset: step; display: flex; flex-direction: column; gap: 12px; margin: 14px 0 20px; }
+.step {
+  display: flex; gap: 14px; align-items: flex-start;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px;
+}
+.step-num {
+  flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
+  background: var(--tag-bg); color: var(--tag-col); border: 1px solid rgba(78,202,139,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; font-family: 'JetBrains Mono', monospace;
+}
+.step-body { flex: 1; }
+.step-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.step-desc { font-size: 13px; color: var(--muted); line-height: 1.65; }
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  #main { padding: 72px 20px 80px 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     LANDING PAGE
+══════════════════════════════════════════════════════ -->
+<div id="landing">
+  <div class="landing-grid-bg"></div>
+  <div class="landing-badge">Documentazione Completa</div>
+  <div class="landing-title">Social <span>PostIt</span></div>
+  <div class="landing-sub">Piattaforma social con post, like, commenti e chat live in tempo reale</div>
+  <div class="landing-meta">Node.js · Express · EJS · WebSocket · JSON Storage &nbsp;|&nbsp; Autore: <span>Lorenzo</span></div>
+  <div class="landing-cards">
+
+    <div class="landing-card user" onclick="openView('user')">
+      <span class="lc-icon">📖</span>
+      <div class="lc-title">Guida Utente</div>
+      <div class="lc-desc">
+        Come usare l'applicazione: registrazione, login, creazione post, immagini, like, commenti e chat live. Pensata per chi <strong>usa</strong> il progetto.
+      </div>
+      <button class="lc-cta">Entra nella Guida →</button>
+      <div class="lc-chips">
+        <span class="lc-chip">Funzionalità</span>
+        <span class="lc-chip">Flusso Utente</span>
+        <span class="lc-chip">Interfaccia</span>
+        <span class="lc-chip">FAQ</span>
+      </div>
+    </div>
+
+    <div class="landing-card arch" onclick="openView('arch')">
+      <span class="lc-icon">🏗️</span>
+      <div class="lc-title">Architettura</div>
+      <div class="lc-desc">
+        Stack tecnico, struttura del progetto, design del software, documentazione del codice, testing, deployment e manutenzione.
+      </div>
+      <button class="lc-cta">Entra nell'Architettura →</button>
+      <div class="lc-chips">
+        <span class="lc-chip">Architettura</span>
+        <span class="lc-chip">Design</span>
+        <span class="lc-chip">Codice</span>
+        <span class="lc-chip">Testing</span>
+        <span class="lc-chip">Deployment</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="overlay-bg" id="overlayBg" onclick="closeSidebar()"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     DOC VIEW: GUIDA UTENTE
+══════════════════════════════════════════════════════ -->
+<div class="doc-view" id="view-user">
+
+  <div id="topbar">
+    <div id="topbar-hamburger" onclick="toggleSidebar()">
+      <span></span><span></span><span></span>
+    </div>
+    <div class="topbar-crumb">Social PostIt &rsaquo; <b id="current-section-u">Guida Utente</b></div>
+    <a class="topbar-home" id="topbar-home" onclick="goHome()">← Home</a>
+  </div>
+
+  <div id="sidebar">
+    <div id="sidebar-header">
+      <div class="sidebar-logo">Social PostIt</div>
+      <div class="sidebar-ver">v1.0 — 2026</div>
+      <div id="sidebar-mode-badge" class="sidebar-mode-badge user">Guida Utente</div>
+    </div>
+    <div id="search-box">
+      <input type="text" placeholder="🔍 Cerca nella documentazione..." oninput="searchDoc(this.value)">
+    </div>
+    <div id="nav"></div>
+    <div class="sidebar-footer">
+      <div class="sidebar-btn" onclick="goHome()">🏠 Home</div>
+      <div class="sidebar-btn" onclick="switchView()">🔄 Cambia vista</div>
+    </div>
+  </div>
+
+  <div id="main">
+    <div id="main-inner">
+
+    <div id="cover">
+      <div class="cover-title">Social <span>PostIt</span></div>
+      <div class="cover-sub">Guida Utente Completa</div>
+      <div class="cover-author">Progetto Node.js — Documentazione</div>
+      <div class="cover-tags">
+        <span class="tag">Node.js</span>
+        <span class="tag">Express</span>
+        <span class="tag">EJS</span>
+        <span class="tag">WebSocket</span>
+        <span class="tag">Bootstrap 5</span>
+        <span class="tag">JSON Storage</span>
+      </div>
+      <div class="cover-meta">Autore: Lorenzo</div>
+    </div>
+
+    <div id="toc">
+      <h2>📋 Indice dei Contenuti</h2>
+      <ol>
+        <li><a href="#u1">Introduzione al Progetto</a>
+          <ol>
+            <li><a href="#u1-1">Cos'è Social PostIt</a></li>
+            <li><a href="#u1-2">Obiettivi e Scopo</a></li>
+            <li><a href="#u1-3">Funzionalità principali</a></li>
+          </ol>
+        </li>
+        <li><a href="#u2">Avvio dell'Applicazione</a>
+          <ol>
+            <li><a href="#u2-1">Requisiti</a></li>
+            <li><a href="#u2-2">Installazione e avvio</a></li>
+          </ol>
+        </li>
+        <li><a href="#u3">Registrazione e Login</a>
+          <ol>
+            <li><a href="#u3-1">Come registrarsi</a></li>
+            <li><a href="#u3-2">Come accedere</a></li>
+            <li><a href="#u3-3">Logout</a></li>
+          </ol>
+        </li>
+        <li><a href="#u4">Creare un Post</a>
+          <ol>
+            <li><a href="#u4-1">Form nuovo post</a></li>
+            <li><a href="#u4-2">Aggiungere un'immagine</a></li>
+            <li><a href="#u4-3">Limiti e validazione</a></li>
+          </ol>
+        </li>
+        <li><a href="#u5">Home Feed e Interazioni</a>
+          <ol>
+            <li><a href="#u5-1">Visualizzazione post</a></li>
+            <li><a href="#u5-2">Like</a></li>
+            <li><a href="#u5-3">Commenti</a></li>
+          </ol>
+        </li>
+        <li><a href="#u6">Chat Live</a>
+          <ol>
+            <li><a href="#u6-1">Accedere alla chat</a></li>
+            <li><a href="#u6-2">Inviare messaggi</a></li>
+            <li><a href="#u6-3">Tipi di messaggi</a></li>
+          </ol>
+        </li>
+        <li><a href="#u7">Struttura del Sito</a></li>
+        <li><a href="#u8">Domande Frequenti (FAQ)</a></li>
+        <li><a href="#u9">Limitazioni Note</a></li>
+      </ol>
+    </div>
+
+    <!-- ── SEZIONE 1 ── -->
+    <div class="doc-section" id="u1">
+      <h1 class="doc-h1"><span class="section-num">01</span> Introduzione al Progetto</h1>
+
+      <div id="u1-1">
+        <h2 class="doc-h2">1.1 Cos'è Social PostIt</h2>
+        <p class="doc-p">Social PostIt è una piattaforma social leggera sviluppata in Node.js, pensata come progetto didattico per esplorare le fondamenta dello sviluppo web full-stack. Permette agli utenti registrati di pubblicare post con testo e immagini, interagire con i contenuti altrui tramite like e commenti, e comunicare in tempo reale tramite chat.</p>
+        <p class="doc-p">L'intera applicazione gira su un unico file server (<code>server.js</code>) e salva tutti i dati su file JSON locali, senza necessità di un database esterno. Le pagine HTML vengono generate dinamicamente dal server usando il motore di template <strong>EJS</strong>.</p>
+        <div class="callout info">
+          <span class="callout-icon">ℹ️</span>
+          <div class="callout-body"><strong>Natura del progetto</strong>Si tratta di un progetto educativo. Non è progettato per uso in produzione su larga scala: la gestione della sicurezza è semplificata intenzionalmente.</div>
+        </div>
+      </div>
+
+      <div id="u1-2">
+        <h2 class="doc-h2">1.2 Obiettivi e Scopo</h2>
+        <ul class="doc-ul">
+          <li>Dimostrare il funzionamento di un server HTTP con Express in Node.js</li>
+          <li>Illustrare il rendering server-side con template EJS</li>
+          <li>Esplorare la persistenza dati tramite file JSON senza database</li>
+          <li>Implementare autenticazione base tramite cookie</li>
+          <li>Introdurre le comunicazioni real-time con WebSocket</li>
+          <li>Gestire upload di immagini tramite codifica base64</li>
+        </ul>
+      </div>
+
+      <div id="u1-3">
+        <h2 class="doc-h2">1.3 Funzionalità Principali</h2>
+        <div class="info-table-wrap">
+          <table class="info-table">
+            <thead><tr><th>Funzionalità</th><th>Route</th><th>Descrizione</th></tr></thead>
+            <tbody>
+              <tr><td>Registrazione</td><td>GET/POST /signup</td><td>Crea un nuovo account con username e password</td></tr>
+              <tr><td>Login/Logout</td><td>GET/POST /login, GET /logout</td><td>Autenticazione tramite cookie di sessione</td></tr>
+              <tr><td>Home Feed</td><td>GET /</td><td>Visualizza tutti i post in ordine cronologico inverso con barra di ricerca e filtro tag</td></tr>
+              <tr><td>Crea Post</td><td>GET/POST /post</td><td>Pubblica un post con titolo, testo, tag e immagine opzionale</td></tr>
+              <tr><td>Elimina Post</td><td>POST /delete-post/:index</td><td>Rimuove un post (solo l'autore, via AJAX)</td></tr>
+              <tr><td>Like</td><td>POST /like</td><td>Aggiunge o rimuove il like a un post (AJAX, nessun reload)</td></tr>
+              <tr><td>Commento</td><td>POST /comment/:index</td><td>Pubblica un commento su un post specifico</td></tr>
+              <tr><td>Elimina Commento</td><td>POST /delete-comment/:pi/:ci</td><td>Rimuove un commento (solo l'autore, via AJAX)</td></tr>
+              <tr><td>Profilo</td><td>GET /profile/:username</td><td>Visualizza il profilo pubblico con statistiche e post dell'utente</td></tr>
+              <tr><td>Ricerca</td><td>GET /search</td><td>Pagina di ricerca per utenti e post</td></tr>
+              <tr><td>Autocomplete</td><td>GET /api/search</td><td>API JSON per il dropdown di ricerca nella home</td></tr>
+              <tr><td>Chat Live</td><td>GET /chat + WebSocket</td><td>Chat in tempo reale per tutti gli utenti connessi</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SEZIONE 2 ── -->
+    <div class="doc-section" id="u2">
+      <h1 class="doc-h1"><span class="section-num">02</span> Avvio dell'Applicazione</h1>
+
+      <div id="u2-1">
+        <h2 class="doc-h2">2.1 Requisiti</h2>
+        <ul class="doc-ul">
+          <li><strong>Node.js</strong> versione 14 o superiore (consigliato 18+)</li>
+          <li><strong>npm</strong> incluso con Node.js</li>
+          <li>Dipendenze: <code>express</code>, <code>ws</code></li>
+          <li>File <code>utenti.json</code> (creato automaticamente alla prima registrazione)</li>
+          <li>File <code>posts.json</code> (creato automaticamente al primo post)</li>
+          <li>Cartella <code>views/</code> con i template EJS: <code>index.ejs</code>, <code>search.ejs</code>, <code>profile.ejs</code>, <code>post.ejs</code>, <code>login.ejs</code>, <code>signup.ejs</code>, <code>chat.ejs</code>, <code>404.ejs</code></li>
+          <li>File <code>styles.css</code> nella root del progetto (foglio di stile condiviso)</li>
+        </ul>
+      </div>
+
+      <div id="u2-2">
+        <h2 class="doc-h2">2.2 Installazione e Avvio</h2>
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Installa le dipendenze</div><div class="step-desc">Apri il terminale nella cartella del progetto ed esegui:</div></div></div>
+        </div>
+        <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span></div><pre class="doc-code-block">npm install express ws</pre></div>
+        <div class="steps">
+          <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Avvia il server</div><div class="step-desc">Dalla cartella del progetto:</div></div></div>
+        </div>
+        <div class="code-wrap"><div class="code-header"><span class="code-lang">bash</span></div><pre class="doc-code-block">node server.js</pre></div>
+        <div class="steps">
+          <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Apri il browser</div><div class="step-desc">Naviga su <code>http://localhost:3000</code> — il server è pronto quando nel terminale appare: <code>Server avviato su http://localhost:3000</code></div></div></div>
+        </div>
+        <div class="callout ok">
+          <span class="callout-icon">✅</span>
+          <div class="callout-body"><strong>File JSON automatici</strong>I file <code>utenti.json</code> e <code>posts.json</code> vengono creati automaticamente alla prima registrazione e al primo post. Non è necessario crearli a mano.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SEZIONE 3 ── -->
+    <div class="doc-section" id="u3">
+      <h1 class="doc-h1"><span class="section-num">03</span> Registrazione e Login</h1>
+
+      <div id="u3-1">
+        <h2 class="doc-h2">3.1 Come Registrarsi</h2>
+        <p class="doc-p">Per creare un account clicca su <strong>Registrati</strong> nella navbar. Inserisci un username unico e una password, poi clicca "Crea account". Il sistema verifica che lo username non sia già in uso, salva le credenziali in <code>utenti.json</code> e imposta automaticamente il cookie di sessione reindirizzando alla home.</p>
+        <div class="callout warn">
+          <span class="callout-icon">⚠️</span>
+          <div class="callout-body"><strong>Sicurezza</strong>Le password vengono salvate in chiaro in <code>utenti.json</code>. Questo è accettabile per un progetto didattico ma non per un'applicazione reale.</div>
+        </div>
+      </div>
+
+      <div id="u3-2">
+        <h2 class="doc-h2">3.2 Come Accedere</h2>
+        <p class="doc-p">Clicca su <strong>Accedi</strong> nella navbar. Inserisci username e password. Se le credenziali sono corrette, il server imposta un cookie di sessione e reindirizza alla home. Se errate, appare il messaggio "Credenziali errate".</p>
+        <p class="doc-p">Il cookie di sessione contiene lo username codificato con <code>encodeURIComponent</code> e ha <code>Path=/</code>, quindi è valido su tutte le pagine del sito.</p>
+      </div>
+
+      <div id="u3-3">
+        <h2 class="doc-h2">3.3 Logout</h2>
+        <p class="doc-p">Clicca su <strong>Esci</strong> nella navbar. Il server invalida il cookie impostando la data di scadenza a gennaio 1970: il browser lo elimina immediatamente. Dopo il logout vieni reindirizzato alla home come utente non autenticato.</p>
+      </div>
+    </div>
+
+    <!-- ── SEZIONE 4 ── -->
+    <div class="doc-section" id="u4">
+      <h1 class="doc-h1"><span class="section-num">04</span> Creare un Post</h1>
+
+      <div id="u4-1">
+        <h2 class="doc-h2">4.1 Form Nuovo Post</h2>
+        <p class="doc-p">Clicca su <strong>Nuovo Post</strong> nella navbar (visibile solo se sei loggato). Compila i campi disponibili:</p>
+        <ul class="doc-ul">
+          <li><strong>Titolo</strong> — obbligatorio, max 120 caratteri, appare come intestazione della card</li>
+          <li><strong>Contenuto</strong> — obbligatorio, max 2000 caratteri, con contatore in tempo reale</li>
+          <li><strong>Immagine</strong> — opzionale, caricabile tramite click o drag&amp;drop</li>
+          <li><strong>Tag</strong> — opzionali, separati da virgola; il simbolo # viene aggiunto automaticamente</li>
+        </ul>
+        <p class="doc-p">Dopo aver cliccato "Pubblica", il post viene salvato in <code>posts.json</code> con titolo, contenuto, autore, data/ora, tag, array likes e array commenti vuoti.</p>
+      </div>
+
+      <div id="u4-2">
+        <h2 class="doc-h2">4.2 Aggiungere un'Immagine</h2>
+        <p class="doc-p">Clicca sull'area tratteggiata o trascina un file immagine. Formati accettati: JPG, PNG, GIF, WEBP. Dopo la selezione:</p>
+        <ul class="doc-ul">
+          <li>L'immagine viene ridimensionata lato client a massimo 900px di lato</li>
+          <li>Viene compressa in JPEG con qualità 0.75 tramite un canvas HTML5</li>
+          <li>La stringa base64 risultante viene inserita in un campo nascosto del form</li>
+          <li>Un'anteprima viene mostrata nella pagina con pulsante di rimozione</li>
+        </ul>
+        <div class="callout info">
+          <span class="callout-icon">📦</span>
+          <div class="callout-body"><strong>Come funziona base64</strong>L'immagine viene convertita in una lunga stringa di testo (<code>data:image/jpeg;base64,...</code>) che può essere salvata direttamente nel file JSON senza un sistema di storage separato.</div>
+        </div>
+      </div>
+
+      <div id="u4-3">
+        <h2 class="doc-h2">4.3 Limiti e Validazione</h2>
+        <ul class="doc-ul">
+          <li>Dimensione massima immagine originale: <strong>5 MB</strong> — controllata lato client prima della compressione</li>
+          <li>Dimensione massima in uscita: 900px · qualità JPEG 75%</li>
+          <li>Limite body server: <strong>10 MB</strong> (configurato in Express)</li>
+          <li>Titolo: max 120 caratteri. Contenuto: max 2000 caratteri (validazione HTML)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ── SEZIONE 5 ── -->
+    <div class="doc-section" id="u5">
+      <h1 class="doc-h1"><span class="section-num">05</span> Home Feed e Interazioni</h1>
+
+      <div id="u5-1">
+        <h2 class="doc-h2">5.1 Visualizzazione Post</h2>
+        <p class="doc-p">La home page (<code>/</code>) mostra tutti i post dal più recente al più vecchio. Ogni card include: titolo, badge autore (cliccabile per andare al profilo), data di pubblicazione, tag hashtag, testo, immagine (se presente), contatore like, contatore commenti e sezione commenti.</p>
+        <p class="doc-p">La barra di ricerca nella home filtra le card visibili in tempo reale per titolo, autore o tag. Premendo Enter si accede alla pagina di ricerca completa. Cliccando su un tag si applica il filtro automaticamente.</p>
+      </div>
+
+      <div id="u5-2">
+        <h2 class="doc-h2">5.2 Like</h2>
+        <p class="doc-p">Ogni post ha un pulsante ♥ con il contatore dei like. Il sistema funziona con <strong>AJAX</strong>: il browser invia una richiesta POST a <code>/like</code> in background, senza ricaricare la pagina. Il server risponde con il nuovo conteggio e lo stato del like.</p>
+        <ul class="doc-ul">
+          <li>Se non hai ancora messo like → il tuo username viene aggiunto all'array likes del post</li>
+          <li>Se hai già messo like → il tuo username viene rimosso (toggle)</li>
+          <li>Il pulsante si colora di rosa quando hai già messo like</li>
+          <li>Se non sei loggato, il contatore è visibile ma il pulsante non è presente</li>
+        </ul>
+      </div>
+
+      <div id="u5-3">
+        <h2 class="doc-h2">5.3 Commenti</h2>
+        <p class="doc-p">Sotto ogni post c'è una sezione commenti visibile solo agli utenti loggati. Scrivi un commento nel campo di testo e premi "Invia". Il form invia una richiesta POST a <code>/comment/:index</code> che aggiunge il commento e ricarica la pagina. I commenti mostrano autore, testo e data. L'autore di un commento può eliminarlo tramite il pulsante "Elimina" (via AJAX).</p>
+        <p class="doc-p">L'autore di un post può eliminare il proprio post tramite il pulsante "🗑 Elimina" (visibile solo all'autore, via AJAX).</p>
+      </div>
+    </div>
+
+    <!-- ── SEZIONE 6 ── -->
+    <div class="doc-section" id="u6">
+      <h1 class="doc-h1"><span class="section-num">06</span> Chat Live</h1>
+
+      <div id="u6-1">
+        <h2 class="doc-h2">6.1 Accedere alla Chat</h2>
+        <p class="doc-p">Clicca su <strong>Chat</strong> nella navbar (visibile solo se sei loggato). Appena apri la pagina, il browser stabilisce una connessione WebSocket con il server e riceve un messaggio di benvenuto. Tutti gli altri utenti connessi ricevono una notifica del tuo ingresso.</p>
+      </div>
+
+      <div id="u6-2">
+        <h2 class="doc-h2">6.2 Inviare Messaggi</h2>
+        <p class="doc-p">Scrivi un messaggio nel campo in basso e premi "Invia" o <kbd>Enter</kbd>. La barra emoji permette di inserire rapidamente emoji nel messaggio. Un indicatore "sta scrivendo..." appare agli altri utenti mentre digiti.</p>
+        <ul class="doc-ul">
+          <li>I <strong>tuoi messaggi</strong> appaiono allineati a destra con sfondo azzurro</li>
+          <li>I <strong>messaggi degli altri</strong> appaiono a sinistra con sfondo scuro</li>
+          <li>I <strong>messaggi di sistema</strong> (ingresso/uscita utenti) appaiono centrati</li>
+        </ul>
+        <p class="doc-p">La chat non conserva la cronologia: i messaggi sono visibili solo agli utenti connessi in quel momento.</p>
+      </div>
+
+      <div id="u6-3">
+        <h2 class="doc-h2">6.3 Tipi di Messaggi</h2>
+        <div class="info-table-wrap">
+          <table class="info-table">
+            <thead><tr><th>Tipo</th><th>Aspetto</th><th>Quando appare</th></tr></thead>
+            <tbody>
+              <tr><td>system</td><td>Centrato, pill giallo</td><td>Ingresso/uscita utente, connessione stabilita</td></tr>
+              <tr><td>chat (tuo)</td><td>Azzurro, allineato a destra</td><td>Messaggi inviati da te</td></tr>
+              <tr><td>chat (altri)</td><td>Scuro, allineato a sinistra</td><td>Messaggi inviati dagli altri</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SEZIONE 7 ── -->
+    <div class="doc-section" id="u7">
+      <h1 class="doc-h1"><span class="section-num">07</span> Struttura del Sito</h1>
+      <div class="info-table-wrap">
+        <table class="info-table">
+          <thead><tr><th>URL</th><th>Metodo</th><th>Descrizione</th></tr></thead>
+          <tbody>
+            <tr><td>/</td><td>GET</td><td>Home feed — tutti i post con ricerca e filtro tag</td></tr>
+            <tr><td>/login</td><td>GET / POST</td><td>Pagina e form di login</td></tr>
+            <tr><td>/signup</td><td>GET / POST</td><td>Pagina e form di registrazione</td></tr>
+            <tr><td>/logout</td><td>GET</td><td>Cancella il cookie e fa logout</td></tr>
+            <tr><td>/post</td><td>GET / POST</td><td>Form e salvataggio nuovo post (richiede login)</td></tr>
+            <tr><td>/delete-post/:index</td><td>POST</td><td>Elimina un post — solo l'autore (risponde JSON)</td></tr>
+            <tr><td>/like</td><td>POST</td><td>Toggle like su un post (AJAX, risponde JSON)</td></tr>
+            <tr><td>/comment/:index</td><td>POST</td><td>Aggiunge un commento</td></tr>
+            <tr><td>/delete-comment/:pi/:ci</td><td>POST</td><td>Elimina un commento — solo l'autore (risponde JSON)</td></tr>
+            <tr><td>/profile/:username</td><td>GET</td><td>Profilo pubblico di un utente con statistiche e post</td></tr>
+            <tr><td>/search</td><td>GET</td><td>Pagina di ricerca per utenti e post</td></tr>
+            <tr><td>/api/search</td><td>GET</td><td>API JSON per autocomplete della ricerca</td></tr>
+            <tr><td>/chat</td><td>GET</td><td>Pagina chat live (richiede login)</td></tr>
+            <tr><td>ws://localhost:3000</td><td>WebSocket</td><td>Canale real-time per la chat</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── SEZIONE 8 ── -->
+    <div class="doc-section" id="u8">
+      <h1 class="doc-h1"><span class="section-num">08</span> Domande Frequenti (FAQ)</h1>
+
+      <h3 class="doc-h3">Posso vedere i post senza essere registrato?</h3>
+      <p class="doc-p">Sì. La home page è pubblica. Puoi leggere tutti i post e i commenti senza fare login. Like, commenti, chat e creazione post richiedono l'autenticazione.</p>
+
+      <h3 class="doc-h3">I messaggi della chat vengono salvati?</h3>
+      <p class="doc-p">No. La chat usa WebSocket puro senza persistenza: i messaggi esistono solo in memoria durante la sessione. Se ricarichi la pagina o il server si riavvia, la cronologia è persa.</p>
+
+      <h3 class="doc-h3">Posso usare la stessa username su più dispositivi?</h3>
+      <p class="doc-p">Sì, ma l'autenticazione è tramite cookie nel browser. Ogni browser/dispositivo ha il proprio cookie e può fare login indipendentemente con le stesse credenziali.</p>
+
+      <h3 class="doc-h3">Cosa succede se carico un'immagine molto grande?</h3>
+      <p class="doc-p">Il controllo lato client blocca immagini sopra 5 MB. Anche le immagini accettate vengono compresse e ridimensionate a massimo 900px prima dell'invio, riducendo notevolmente il peso finale nel JSON.</p>
+
+      <h3 class="doc-h3">Posso eliminare un post o un commento?</h3>
+      <p class="doc-p">Sì. L'autore di un post può eliminarlo tramite il pulsante "🗑 Elimina" visibile nella card. L'autore di un commento può eliminarlo tramite il pulsante "Elimina" nella sezione commenti.</p>
+
+      <h3 class="doc-h3">Il server funziona su Windows/Mac/Linux?</h3>
+      <p class="doc-p">Sì. L'applicazione usa <code>path.join(__dirname, ...)</code> per costruire i percorsi dei file in modo compatibile con tutti i sistemi operativi.</p>
+
+      <h3 class="doc-h3">Come funziona la ricerca?</h3>
+      <p class="doc-p">La barra di ricerca nella home filtra localmente le card visibili per titolo, autore e tag. Premendo Enter o usando la pagina <code>/search</code>, si esegue una ricerca completa sul server che include anche estratti del contenuto dei post e risultati per profili utente.</p>
+    </div>
+
+    <!-- ── SEZIONE 9 ── -->
+    <div class="doc-section" id="u9">
+      <h1 class="doc-h1"><span class="section-num">09</span> Limitazioni Note</h1>
+      <ul class="doc-ul">
+        <li><strong>Password in chiaro</strong> — non c'è hashing. In produzione si userebbe bcrypt o argon2.</li>
+        <li><strong>Cookie non sicuri</strong> — il cookie non ha il flag <code>httpOnly</code> né <code>Secure</code>.</li>
+        <li><strong>No HTTPS</strong> — il server gira solo su HTTP locale.</li>
+        <li><strong>Nessuna sessione server-side</strong> — non è possibile invalidare sessioni lato server.</li>
+        <li><strong>File JSON come database</strong> — le operazioni sono sincrone e non gestiscono concorrenza. Su traffico elevato possono verificarsi race conditions.</li>
+        <li><strong>Immagini in base64 nel JSON</strong> — con molti post con immagini, il file posts.json può diventare molto grande.</li>
+        <li><strong>Chat senza storia</strong> — i messaggi non vengono persistiti.</li>
+        <li><strong>Nessuna paginazione</strong> — tutti i post vengono caricati in una sola richiesta.</li>
+      </ul>
+    </div>
+
+    </div><!-- /main-inner -->
+  </div><!-- /main -->
+</div><!-- /view-user -->
+
+
+<!-- ══════════════════════════════════════════════════════
+     DOC VIEW: ARCHITETTURA
+══════════════════════════════════════════════════════ -->
+<div class="doc-view" id="view-arch">
+
+  <div id="topbar2" style="position:fixed;top:0;left:0;right:0;height:52px;background:rgba(13,17,23,0.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;z-index:100;gap:14px;">
+    <div id="topbar-hamburger2" style="width:36px;height:36px;border-radius:8px;background:var(--bg2);border:1px solid var(--border);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;" onclick="toggleSidebar2()">
+      <span style="display:block;width:16px;height:2px;background:var(--muted);border-radius:2px;"></span>
+      <span style="display:block;width:16px;height:2px;background:var(--muted);border-radius:2px;"></span>
+      <span style="display:block;width:16px;height:2px;background:var(--muted);border-radius:2px;"></span>
+    </div>
+    <div class="topbar-crumb">Social PostIt &rsaquo; <b id="current-section-a">Architettura</b></div>
+    <a class="topbar-home" style="margin-left:auto;padding:6px 14px;border-radius:8px;background:var(--bg2);border:1px solid var(--border);color:var(--muted);cursor:pointer;font-size:12px;font-family:Inter,sans-serif;transition:all 0.15s;text-decoration:none;display:inline-flex;align-items:center;gap:6px;" onclick="goHome()">← Home</a>
+  </div>
+
+  <div id="sidebar2" style="width:290px;min-width:290px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:-290px;height:100vh;z-index:200;transition:left 0.28s cubic-bezier(0.4,0,0.2,1);">
+    <div id="sidebar-header">
+      <div class="sidebar-logo">Social PostIt</div>
+      <div class="sidebar-ver">v1.0 — 2026</div>
+      <div class="sidebar-mode-badge arch">Architettura</div>
+    </div>
+    <div id="search-box">
+      <input type="text" placeholder="🔍 Cerca nella documentazione..." oninput="searchDoc2(this.value)">
+    </div>
+    <div id="nav2" style="overflow-y:auto;flex:1;padding:6px 0 20px;scrollbar-width:thin;scrollbar-color:#1e2d45 transparent;"></div>
+    <div class="sidebar-footer">
+      <div class="sidebar-btn" onclick="goHome()">🏠 Home</div>
+      <div class="sidebar-btn" onclick="switchView()">🔄 Cambia vista</div>
+    </div>
+  </div>
+
+  <div id="main2" style="flex:1;padding:76px 60px 100px 60px;max-width:1000px;">
+    <div id="main-inner2" style="max-width:840px;">
+
+    <div id="cover">
+      <div class="cover-title">Social <span>PostIt</span></div>
+      <div class="cover-sub">Documentazione Tecnica</div>
+      <div class="cover-author">Analisi Architetturale e del Codice</div>
+      <div class="cover-tags">
+        <span class="tag">Node.js</span>
+        <span class="tag">Express</span>
+        <span class="tag">EJS</span>
+        <span class="tag">WebSocket</span>
+        <span class="tag">JSON Storage</span>
+        <span class="tag">Bootstrap 5</span>
+      </div>
+      <div class="cover-meta">Autore: Lorenzo</div>
+    </div>
+
+    <div id="toc">
+      <h2>📋 Indice dei Contenuti</h2>
+      <ol>
+        <li><a href="#a1">Introduzione</a>
+          <ol>
+            <li><a href="#a1-1">Documentazione</a></li>
+            <li><a href="#a1-2">Software</a></li>
+          </ol>
+        </li>
+        <li><a href="#a2">Architettura del Software</a>
+          <ol>
+            <li><a href="#a2-1">Descrizione dell'Architettura</a></li>
+            <li><a href="#a2-2">Componenti Principali</a></li>
+          </ol>
+        </li>
+        <li><a href="#a3">Analisi delle Priorità</a>
+          <ol>
+            <li><a href="#a3-1">Robustezza</a></li>
+            <li><a href="#a3-2">Usabilità</a></li>
+            <li><a href="#a3-3">Portabilità</a></li>
+          </ol>
+        </li>
+        <li><a href="#a4">Design del Software</a>
+          <ol>
+            <li><a href="#a4-1">Principi di Design Adottati</a></li>
+            <li><a href="#a4-2">Scelte Architetturali e Motivi</a></li>
+          </ol>
+        </li>
+        <li><a href="#a5">Documentazione del Codice</a>
+          <ol>
+            <li><a href="#a5-1">Struttura del Codice Sorgente</a></li>
+            <li><a href="#a5-2">Classi e Metodi Principali</a></li>
+            <li><a href="#a5-3">Commenti e Note Importanti</a></li>
+            <li><a href="#a5-4">Esempi di Utilizzo</a></li>
+            <li><a href="#a5-5">Snippet per le Proprietà Analizzate</a></li>
+          </ol>
+        </li>
+        <li><a href="#a6">Testing</a>
+          <ol>
+            <li><a href="#a6-1">Strategia di Testing</a></li>
+            <li><a href="#a6-2">Risultati e Report</a></li>
+          </ol>
+        </li>
+        <li><a href="#a7">Deployment e Portabilità</a>
+          <ol>
+            <li><a href="#a7-1">Guida al Deployment</a></li>
+            <li><a href="#a7-2">Considerazioni sulla Portabilità</a></li>
+          </ol>
+        </li>
+        <li><a href="#a8">Manutenzione del Software</a>
+          <ol>
+            <li><a href="#a8-1">Strategie di Manutenzione e Bug Fixing</a></li>
+          </ol>
+        </li>
+        <li><a href="#a9">Conclusioni</a>
+          <ol>
+            <li><a href="#a9-1">Sintesi delle Proprietà Analizzate</a></li>
+            <li><a href="#a9-2">Suggerimenti Futuri</a></li>
+            <li><a href="#a9-3">Lezioni Apprese</a></li>
+          </ol>
+        </li>
+        <li><a href="#a10">Appendici</a>
+          <ol>
+            <li><a href="#a10-1">Glossario</a></li>
+            <li><a href="#a10-2">Riferimenti e Bibliografia</a></li>
+            <li><a href="#a10-3">Link Utili e Risorse Esterne</a></li>
+          </ol>
+        </li>
+      </ol>
+    </div>
+
+    <!-- ══ A1: INTRODUZIONE ══ -->
+    <div class="doc-section" id="a1">
+      <h1 class="doc-h1"><span class="section-num">01</span> Introduzione</h1>
+
+      <div id="a1-1">
+        <h2 class="doc-h2">1.1 Documentazione</h2>
+
+        <h3 class="doc-h3">1.1.1 Obiettivi della Documentazione</h3>
+        <p class="doc-p">Questa documentazione ha lo scopo di descrivere in modo completo l'architettura, il design e il funzionamento interno di Social PostIt. I destinatari principali sono sviluppatori e studenti che intendono comprendere le scelte tecniche adottate, estendere il progetto o utilizzarlo come riferimento per lo sviluppo di applicazioni web full-stack con Node.js.</p>
+        <ul class="doc-ul">
+          <li>Descrivere l'architettura del sistema e i componenti che la compongono</li>
+          <li>Documentare le scelte di design e le motivazioni che le hanno guidate</li>
+          <li>Fornire riferimenti al codice sorgente con esempi e snippet significativi</li>
+          <li>Illustrare le strategie di testing, deployment e manutenzione</li>
+          <li>Offrire un glossario dei termini tecnici utilizzati</li>
+        </ul>
+
+        <h3 class="doc-h3">1.1.2 Panoramica del Documento</h3>
+        <p class="doc-p">Il documento è organizzato in dieci sezioni principali che coprono progressivamente tutti gli aspetti del software: dall'introduzione al progetto fino alle appendici con glossario e risorse. La sezione di Architettura descrive la struttura generale del sistema; la sezione di Design approfondisce le scelte implementative; la sezione Documentazione del Codice fornisce riferimenti tecnici diretti al sorgente; le sezioni di Testing, Deployment e Manutenzione trattano il ciclo di vita del software.</p>
+      </div>
+
+      <div id="a1-2">
+        <h2 class="doc-h2">1.2 Software</h2>
+
+        <h3 class="doc-h3">Descrizione del Software</h3>
+        <p class="doc-p">Social PostIt è un'applicazione web full-stack di tipo social network realizzata interamente in JavaScript, con Node.js come runtime server-side. Il sistema consente a utenti registrati di pubblicare post testuali corredati da immagini, interagire con i contenuti altrui tramite like e commenti, cercare utenti e post, visualizzare profili pubblici e comunicare in tempo reale tramite una chat basata su WebSocket.</p>
+        <p class="doc-p">L'applicazione non dipende da alcun database esterno: tutti i dati vengono persistiti su file JSON locali (<code>utenti.json</code> e <code>posts.json</code>). Le viste HTML sono generate dinamicamente dal server tramite il motore di template EJS. Il frontend non utilizza framework JavaScript: tutte le interazioni dinamiche (like, commenti, ricerca, chat) sono implementate con JavaScript vanilla e la Fetch API.</p>
+
+        <h3 class="doc-h3">Scopo del Software</h3>
+        <p class="doc-p">Il progetto nasce con scopo didattico: dimostrare come sia possibile costruire un'applicazione web completa e funzionale con strumenti minimali, senza framework frontend, senza ORM e senza un sistema di autenticazione complesso. Ogni componente del sistema è scelto per la sua semplicità e leggibilità, privilegiando la comprensibilità del codice rispetto all'ottimizzazione delle prestazioni.</p>
+        <div class="callout info">
+          <span class="callout-icon">ℹ️</span>
+          <div class="callout-body"><strong>Contesto d'uso</strong>L'applicazione è pensata per esecuzione locale su un singolo host. Non include le misure di sicurezza necessarie per un deployment in produzione (hashing password, HTTPS, rate limiting, validazione input rigorosa).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ A2: ARCHITETTURA ══ -->
+    <div class="doc-section" id="a2">
+      <h1 class="doc-h1"><span class="section-num">02</span> Architettura del Software</h1>
+
+      <div id="a2-1">
+        <h2 class="doc-h2">2.1 Descrizione dell'Architettura</h2>
+        <p class="doc-p">Social PostIt adotta un'architettura <strong>monolitica a livelli</strong> (layered monolith) su singolo processo Node.js. Non ci sono microservizi, worker separati o code di messaggi: tutto il codice applicativo risiede in <code>server.js</code> e viene eseguito nel medesimo processo.</p>
+        <p class="doc-p">Il pattern seguito è <strong>MVC semplificato</strong>: il server Express gestisce le route (Controller), i file JSON fungono da Model, e i template EJS costituiscono il View. La comunicazione real-time è gestita dal protocollo WebSocket, agganciato allo stesso server HTTP tramite la libreria <code>ws</code>.</p>
+        <div class="arch-flow">
+          <div class="arch-row">
+            <div class="arch-box client">Browser</div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-box proto">HTTP / WebSocket</div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-box server">Express + ws (server.js)</div>
+          </div>
+          <div class="arch-row" style="margin-left:60px;margin-top:6px;">
+            <div class="arch-arrow">↓</div>
+          </div>
+          <div class="arch-row" style="margin-left:40px;">
+            <div class="arch-box view">EJS Templates (views/)</div>
+            <div class="arch-arrow" style="margin:0 10px;">+</div>
+            <div class="arch-box store">JSON Files (utenti.json, posts.json)</div>
+          </div>
+        </div>
+        <p class="doc-p">Il flusso di una richiesta HTTP tipica è: il browser invia una richiesta GET o POST → Express la instrada al route handler corretto → il handler legge o scrive i dati sui file JSON tramite i helper <code>readJSONFile</code> / <code>writeJSONFile</code> → per le route GET, EJS renderizza il template con i dati e invia l'HTML al browser; per le route POST-AJAX, il server risponde con JSON.</p>
+      </div>
+
+      <div id="a2-2">
+        <h2 class="doc-h2">2.2 Componenti Principali</h2>
+        <div class="info-table-wrap">
+          <table class="info-table">
+            <thead><tr><th>Componente</th><th>File/Tecnologia</th><th>Responsabilità</th></tr></thead>
+            <tbody>
+              <tr><td>Server HTTP</td><td>server.js + Express</td><td>Gestisce tutte le route GET e POST, i middleware, e serve i file statici</td></tr>
+              <tr><td>Server WebSocket</td><td>server.js + ws</td><td>Gestisce le connessioni real-time della chat: messaggi, autenticazione della sessione, indicatore di digitazione, contatore online</td></tr>
+              <tr><td>Middleware Cookie</td><td>server.js</td><td>Legge il cookie <code>user=</code> da ogni richiesta e popola <code>res.locals.currentUser</code> per renderlo disponibile in tutti i template</td></tr>
+              <tr><td>Helper JSON</td><td>server.js</td><td>Funzioni <code>readJSONFile</code> e <code>writeJSONFile</code> con gestione degli errori per la persistenza dei dati</td></tr>
+              <tr><td>Helper Ricerca</td><td>server.js</td><td>Funzione <code>buildSearchResults</code> condivisa dalla pagina <code>/search</code> e dall'API <code>/api/search</code></td></tr>
+              <tr><td>Template EJS</td><td>views/*.ejs</td><td>Generano l'HTML delle pagine con i dati iniettati dal server. Ogni file corrisponde a una pagina o vista</td></tr>
+              <tr><td>Foglio di Stile</td><td>styles.css</td><td>CSS centralizzato condiviso da tutte le pagine. Include variabili CSS, componenti, animazioni e responsive design</td></tr>
+              <tr><td>Persistenza Dati</td><td>utenti.json, posts.json</td><td>File JSON che fungono da database. Scritti e letti in modo sincrono tramite il modulo <code>fs</code> di Node.js</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ A3: PRIORITÀ ══ -->
+    <div class="doc-section" id="a3">
+      <h1 class="doc-h1"><span class="section-num">03</span> Analisi delle Priorità</h1>
+
+      <div id="a3-1">
+        <h2 class="doc-h2">3.1 Robustezza</h2>
+        <p class="doc-p">La robustezza è garantita principalmente attraverso una difesa coerente contro input non validi e stati inconsistenti del filesystem.</p>
+        <ul class="doc-ul">
+          <li><strong>Lettura dati difensiva</strong> — la funzione <code>readJSONFile</code> gestisce l'assenza del file, i file vuoti e il JSON malformato, restituendo sempre un valore di default sicuro invece di propagare eccezioni</li>
+          <li><strong>Validazione indici</strong> — tutte le route che accettano un indice numerico (like, commento, elimina post) verificano che l'indice sia un intero valido e che esista nell'array prima di procedere</li>
+          <li><strong>Protezione route private</strong> — le route che richiedono autenticazione controllano <code>res.locals.currentUser</code> e reindirizzano al login o rispondono con errore JSON se l'utente non è loggato</li>
+          <li><strong>Sanitizzazione XSS nella chat</strong> — la funzione <code>escapeHtml</code> in <code>chat.ejs</code> converte i caratteri speciali HTML in entità sicure prima di inserire il testo nel DOM</li>
+          <li><strong>Validazione autorizzazione</strong> — per eliminazione di post e commenti, il server verifica che l'utente corrente sia l'autore prima di procedere</li>
+        </ul>
+        <div class="callout warn">
+          <span class="callout-icon">⚠️</span>
+          <div class="callout-body"><strong>Limite: concorrenza</strong>Le operazioni di lettura e scrittura sui file JSON sono sincrone e non atomiche. In caso di richieste simultanee, è teoricamente possibile una race condition che corrotta i dati. Questo è accettabile per uso didattico su singolo utente locale, ma non per ambienti multi-utente reali.</div>
+        </div>
+      </div>
+
+      <div id="a3-2">
+        <h2 class="doc-h2">3.2 Usabilità</h2>
+        <p class="doc-p">L'interfaccia è progettata per essere intuitiva e reattiva, con feedback immediato per ogni azione dell'utente.</p>
+        <ul class="doc-ul">
+          <li><strong>Feedback visivo immediato</strong> — like e eliminazioni avvengono senza ricaricamento della pagina (AJAX); toast notifiche compaiono nell'angolo inferiore destro per confermare le azioni</li>
+          <li><strong>Filtro locale dei post</strong> — la barra di ricerca nella home filtra le card in tempo reale senza chiamate al server, con contatore di risultati visibili</li>
+          <li><strong>Tag cliccabili</strong> — ogni hashtag è un elemento interattivo che applica il filtro automaticamente al click</li>
+          <li><strong>Autocomplete ricerca</strong> — il dropdown della ricerca nella home mostra suggerimenti di utenti e post con debounce di 300ms per limitare le chiamate API</li>
+          <li><strong>Indicatore di digitazione</strong> — nella chat, gli altri utenti vedono chi sta scrivendo con auto-reset dopo 3 secondi di inattività</li>
+          <li><strong>Barra emoji</strong> — nella chat, una barra di emoji comuni permette l'inserimento rapido senza dover aprire la tastiera emoji del sistema</li>
+          <li><strong>Contatore caratteri</strong> — nel form di creazione post, un contatore mostra i caratteri usati sul totale disponibile, cambiando colore quando si avvicina al limite</li>
+          <li><strong>Design responsive</strong> — tutte le pagine sono ottimizzate per dispositivi mobili tramite media query e layout flex/grid adattivi</li>
+        </ul>
+      </div>
+
+      <div id="a3-3">
+        <h2 class="doc-h2">3.3 Portabilità</h2>
+        <p class="doc-p">Il progetto è progettato per funzionare su qualsiasi sistema operativo che supporti Node.js, senza dipendenze da servizi esterni o configurazioni specifiche della piattaforma.</p>
+        <ul class="doc-ul">
+          <li><strong>Cross-platform paths</strong> — tutti i percorsi ai file JSON usano <code>path.join(__dirname, ...)</code>, garantendo la correttezza sia su Windows (backslash) che su Unix (forward slash)</li>
+          <li><strong>Porta configurabile</strong> — la porta del server si legge dalla variabile d'ambiente <code>PORT</code> con fallback a 3000, consentendo l'esecuzione in ambienti cloud senza modificare il codice</li>
+          <li><strong>No dipendenze native</strong> — le uniche dipendenze npm (<code>express</code>, <code>ws</code>) sono scritte in JavaScript puro e non richiedono compilazione nativa</li>
+          <li><strong>WebSocket auto-adattivo</strong> — il client rileva automaticamente il protocollo (<code>ws://</code> o <code>wss://</code>) in base a <code>window.location.protocol</code>, funzionando sia su HTTP che HTTPS</li>
+          <li><strong>Font via CDN</strong> — i font Google vengono caricati da CDN; in assenza di connessione, il browser ricade sui font di sistema senza rompere il layout</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ══ A4: DESIGN ══ -->
+    <div class="doc-section" id="a4">
+      <h1 class="doc-h1"><span class="section-num">04</span> Design del Software</h1>
+
+      <div id="a4-1">
+        <h2 class="doc-h2">4.1 Principi di Design Adottati</h2>
+        <ul class="doc-ul">
+          <li><strong>Semplicità prima di tutto</strong> — ogni componente fa una cosa sola e la fa bene. Nessun livello di astrazione non necessario. Il codice è leggibile da chi ha una conoscenza base di Node.js.</li>
+          <li><strong>Zero dipendenze frontend</strong> — nessun framework JavaScript lato client (no React, no Vue, no Angular). Tutte le interazioni dinamiche usano JavaScript vanilla e la Fetch API nativa del browser.</li>
+          <li><strong>Server-side rendering</strong> — le pagine vengono generate completamente lato server tramite EJS prima di essere inviate al browser. Questo elimina la complessità di uno SPA e migliora il comportamento con JavaScript disabilitato.</li>
+          <li><strong>Stato nei cookie</strong> — la sessione utente è interamente gestita da un singolo cookie HTTP (<code>user=username</code>). Non c'è stato di sessione sul server, rendendo il sistema stateless per le richieste HTTP.</li>
+          <li><strong>DRY (Don't Repeat Yourself)</strong> — le funzioni helper <code>readJSONFile</code>, <code>writeJSONFile</code> e <code>buildSearchResults</code> sono estratte e riusate da più route. Il foglio di stile <code>styles.css</code> è condiviso da tutte le pagine tramite una route dedicata.</li>
+          <li><strong>Feedback immediato</strong> — ogni azione dell'utente ottiene una risposta visiva entro pochi istanti, tramite AJAX, toast o aggiornamenti inline del DOM.</li>
+        </ul>
+      </div>
+
+      <div id="a4-2">
+        <h2 class="doc-h2">4.2 Scelte Architetturali e Motivi</h2>
+        <div class="info-table-wrap">
+          <table class="info-table">
+            <thead><tr><th>Scelta</th><th>Alternativa scartata</th><th>Motivazione</th></tr></thead>
+            <tbody>
+              <tr><td>File JSON come database</td><td>SQLite, MongoDB</td><td>Nessuna installazione aggiuntiva, leggibilità diretta dei dati, sufficiente per uso didattico locale</td></tr>
+              <tr><td>EJS come template engine</td><td>Pug, Handlebars</td><td>Sintassi HTML standard con tag minimali, curva di apprendimento quasi nulla per chi conosce HTML</td></tr>
+              <tr><td>Cookie HTTP plain per la sessione</td><td>express-session, JWT</td><td>Nessuna dipendenza aggiuntiva, meccanismo comprensibile direttamente dal browser</td></tr>
+              <tr><td>WebSocket raw (ws)</td><td>Socket.IO</td><td>Libreria più leggera, protocollo standard, codice più esplicito e formativo</td></tr>
+              <tr><td>CSS centralizzato in styles.css</td><td>CSS in-page per ogni EJS</td><td>Manutenzione unica del tema, coerenza visiva garantita, cache del browser</td></tr>
+              <tr><td>Messaggi auth WebSocket</td><td>Solo cookie di handshake</td><td>Risolve il problema di identità in ambienti multi-browser sullo stesso host, dove il cookie WS può essere di un altro utente</td></tr>
+              <tr><td>Lettura/scrittura JSON sincrona</td><td>fs.readFile asincrono</td><td>Codice più semplice e lineare per scopo didattico; la concorrenza non è un requisito</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ A5: DOCUMENTAZIONE CODICE ══ -->
+    <div class="doc-section" id="a5">
+      <h1 class="doc-h1"><span class="section-num">05</span> Documentazione del Codice</h1>
+
+      <div id="a5-1">
+        <h2 class="doc-h2">5.1 Struttura del Codice Sorgente</h2>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">struttura progetto</span></div>
+          <pre class="doc-code-block">social-postit/
+├── server.js          # Entry point — server HTTP + WebSocket + tutte le route
+├── styles.css         # Foglio di stile centralizzato (condiviso da tutte le pagine)
+├── utenti.json        # Database utenti (creato automaticamente)
+├── posts.json         # Database post (creato automaticamente)
+├── package.json       # Dipendenze npm
+└── views/
+    ├── index.ejs      # Home feed con ricerca, filtro tag e lista post
+    ├── login.ejs      # Pagina di accesso
+    ├── signup.ejs     # Pagina di registrazione
+    ├── post.ejs       # Form creazione nuovo post con upload immagine
+    ├── chat.ejs       # Interfaccia chat real-time WebSocket
+    ├── profile.ejs    # Profilo pubblico utente con statistiche
+    ├── search.ejs     # Pagina di ricerca utenti e post
+    └── 404.ejs        # Pagina errore non trovato</pre>
+        </div>
+        <p class="doc-p">Il file <code>server.js</code> è l'unico file JavaScript lato server. Contiene, nell'ordine: import dei moduli, setup del server, configurazione Express, definizione dei percorsi JSON, middleware cookie, funzioni helper, e tutte le route HTTP seguite dal server WebSocket. Ogni sezione è delimitata da un blocco di commento titolato.</p>
+      </div>
+
+      <div id="a5-2">
+        <h2 class="doc-h2">5.2 Classi e Metodi Principali</h2>
+        <p class="doc-p">Il progetto non usa classi ES6 — tutto il codice è procedurale con funzioni. Di seguito le funzioni più rilevanti in <code>server.js</code>:</p>
+        <div class="info-table-wrap">
+          <table class="info-table">
+            <thead><tr><th>Funzione</th><th>Parametri</th><th>Comportamento</th></tr></thead>
+            <tbody>
+              <tr><td>readJSONFile()</td><td>filePath, defaultData</td><td>Legge e parsa un file JSON. Gestisce file mancanti, vuoti e JSON malformato restituendo defaultData in tutti i casi di errore.</td></tr>
+              <tr><td>writeJSONFile()</td><td>filePath, data</td><td>Serializza un oggetto JS in JSON indentato e lo scrive su file. Restituisce true/false.</td></tr>
+              <tr><td>buildSearchResults()</td><td>query</td><td>Cerca utenti per username e post per titolo, contenuto, autore e tag. Restituisce un oggetto con array distinti per utenti, post e risultati misti per il dropdown.</td></tr>
+              <tr><td>formatMonthYear()</td><td>dateString</td><td>Converte una stringa ISO in data leggibile in italiano (es. "gen 2026") usando Intl.DateTimeFormat.</td></tr>
+              <tr><td>broadcastOnlineCount()</td><td>—</td><td>Invia a tutti i client WS connessi il messaggio JSON con il conteggio attuale degli utenti online.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="doc-p">Sul lato client, ogni file EJS contiene il proprio JavaScript inline. Le funzioni più significative sono in <code>index.ejs</code>: <code>toggleLike()</code>, <code>filterPosts()</code>, <code>deletePost()</code>, <code>submitComment()</code>, <code>deleteComment()</code>, <code>showToast()</code>, <code>openLightbox()</code>. In <code>chat.ejs</code>: <code>displayMessage()</code>, <code>showTyping()</code>, <code>hideTyping()</code>, <code>escapeHtml()</code>.</p>
+
+      </div>
+
+      <div id="a5-3">
+        <h2 class="doc-h2">5.3 Commenti e Note Importanti nel Codice</h2>
+        <p class="doc-p">Tutti i file sorgente sono commentati riga per riga in italiano. I commenti seguono una struttura gerarchica: blocchi di commento con titolo in maiuscoletto separano le sezioni logiche, mentre commenti inline su singola riga spiegano ogni istruzione significativa.</p>
+        <p class="doc-p">Le note tecniche più importanti inserite nei commenti riguardano:</p>
+        <ul class="doc-ul">
+          <li>Il motivo per cui si usa <code>http.createServer(app)</code> invece di <code>app.listen()</code> — necessario per condividere la porta con WebSocket</li>
+          <li>La spiegazione del meccanismo di autenticazione WebSocket tramite messaggio <code>auth</code> e il problema che risolve</li>
+          <li>Il pattern di calcolo dell'indice reale dei post (<code>reversed.map((p, i) => ({...p, realIndex: i}))</code>) usato in <code>index.ejs</code></li>
+          <li>Il limite <code>10mb</code> su Express necessario per accettare immagini base64</li>
+          <li>L'avviso che le password sono in chiaro (solo uso didattico)</li>
+        </ul>
+      </div>
+
+      <div id="a5-4">
+        <h2 class="doc-h2">5.4 Esempi di Utilizzo del Codice</h2>
+
+        <h3 class="doc-h3">Creare un nuovo post da form HTML</h3>
+        <p class="doc-p">Il browser invia un POST a <code>/post</code> con i campi del form. Il server legge <code>req.body</code>, costruisce l'oggetto post e lo aggiunge all'array letto da <code>posts.json</code>:</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">javascript</span><span class="code-file">server.js — route POST /post</span></div>
+          <pre class="doc-code-block">const posts   = readJSONFile(postsFile, []);
+const newPost = {
+    title:    req.body.title,
+    content:  req.body.content,
+    author:   res.locals.currentUser,
+    date:     new Date().toLocaleString(),
+    likes:    [],
+    comments: [],
+    tags:     req.body.tags
+        ? req.body.tags.split(',').map(t => t.trim().replace(/^#/, '')).filter(Boolean)
+        : []
+};
+posts.push(newPost);
+writeJSONFile(postsFile, posts);</pre>
+        </div>
+
+        <h3 class="doc-h3">Toggle like via AJAX</h3>
+        <p class="doc-p">Il client invia un POST a <code>/like</code> con il body <code>postIndex=N</code>. Il server risponde con JSON; il client aggiorna il DOM senza ricaricare la pagina:</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">javascript</span><span class="code-file">index.ejs — funzione toggleLike()</span></div>
+          <pre class="doc-code-block">fetch('/like', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body:    `postIndex=${index}`
+})
+.then(r => r.json())
+.then(data => {
+    btn.querySelector('.like-count').textContent = data.likes;
+    btn.classList.toggle('liked', data.liked);
+    showToast(data.liked ? '♥ Post apprezzato!' : '♡ Like rimosso');
+});</pre>
+        </div>
+
+        <h3 class="doc-h3">Connessione e autenticazione WebSocket</h3>
+        <p class="doc-p">Appena il socket è aperto, il client invia il proprio username al server tramite un messaggio di tipo <code>auth</code>:</p>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">javascript</span><span class="code-file">chat.ejs — socket.onopen</span></div>
+          <pre class="doc-code-block">const currentUser = '&lt;%= currentUser %&gt;'; // iniettato da EJS
+
+socket.onopen = function() {
+    sendBtn.disabled = false;
+    // Invia l'username al server — risolve ambiguità di sessione
+    // in ambienti dove più browser condividono lo stesso host
+    socket.send(JSON.stringify({ type: 'auth', username: currentUser }));
+};</pre>
+        </div>
+      </div>
+
+      <div id="a5-5">
+        <h2 class="doc-h2">5.5 Snippet di Codice per le Proprietà Analizzate</h2>
+
+        <h3 class="doc-h3">Robustezza — lettura difensiva del JSON</h3>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">javascript</span><span class="code-file">server.js — readJSONFile()</span></div>
+          <pre class="doc-code-block">function readJSONFile(filePath, defaultData = []) {
+    try {
+        if (!fs.existsSync(filePath)) return defaultData; // file non esiste
+        const data = fs.readFileSync(filePath, 'utf8');
+        if (!data.trim())            return defaultData; // file vuoto
+        return JSON.parse(data);                          // parse normale
+    } catch (error) {
+        console.error(`Errore lettura ${filePath}:`, error);
+        return defaultData; // JSON malformato o errore I/O
+    }
+}</pre>
+        </div>
+
+        <h3 class="doc-h3">Usabilità — filtro post in tempo reale</h3>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">javascript</span><span class="code-file">index.ejs — filterPosts()</span></div>
+          <pre class="doc-code-block">function filterPosts() {
+    const q = searchInput.value.trim().toLowerCase();
+    let visible = 0;
+    cards.forEach(card => {
+        if (!q) { card.classList.remove('hidden'); visible++; return; }
+        const query    = q.startsWith('#') ? q.slice(1) : q;
+        const match    = card.dataset.title.includes(query)
+                      || card.dataset.author.includes(query)
+                      || card.dataset.tags.includes(query);
+        card.classList.toggle('hidden', !match);
+        if (match) visible++;
+    });
+    searchCount.textContent = q ? `${visible}/${cards.length}` : '';
+}</pre>
+        </div>
+
+        <h3 class="doc-h3">Portabilità — rilevamento protocollo WebSocket</h3>
+        <div class="code-wrap">
+          <div class="code-header"><span class="code-lang">javascript</span><span class="code-file">chat.ejs — connessione WS</span></div>
+          <pre class="doc-code-block">// Usa wss:// su HTTPS, ws:// su HTTP (localhost usa ws://)
+const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+const socket     = new WebSocket(`${wsProtocol}//${window.location.host}`);</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ A6: TESTING ══ -->
+    <div class="doc-section" id="a6">
+      <h1 class="doc-h1"><span class="section-num">06</span> Testing</h1>
+
+      <div id="a6-1">
+        <h2 class="doc-h2">6.1 Strategia di Testing</h2>
+        <p class="doc-p">Il progetto non include un framework di testing automatizzato (come Jest o Mocha). La verifica del comportamento avviene tramite <strong>testing manuale funzionale</strong>, che si rivela adeguato per la natura e la dimensione del progetto.</p>
+        <p class="doc-p">La strategia copre i seguenti scenari:</p>
+        <ul class="doc-ul">
+          <li><strong>Test di registrazione e login</strong> — verifica che username duplicati vengano rifiutati, che credenziali errate mostrino il messaggio di errore, e che il cookie venga impostato correttamente al login</li>
+          <li><strong>Test CRUD post</strong> — verifica creazione con e senza immagine, con e senza tag; verifica che solo l'autore veda il pulsante elimina; verifica l'eliminazione e la scomparsa dalla home</li>
+          <li><strong>Test like e commenti</strong> — verifica il toggle like (aggiunta e rimozione), l'aggiornamento del contatore senza reload, l'aggiunta e l'eliminazione di commenti</li>
+          <li><strong>Test ricerca</strong> — verifica il filtro locale per titolo, autore e tag; verifica il dropdown di autocomplete; verifica la pagina di ricerca completa</li>
+          <li><strong>Test chat WebSocket</strong> — verifica la ricezione messaggi in real-time, l'indicatore di digitazione, il contatore online, e l'identificazione corretta del mittente in sessioni multi-browser</li>
+          <li><strong>Test profilo</strong> — verifica la visualizzazione delle statistiche e dei post, la distinzione tra profilo proprio e altrui</li>
+          <li><strong>Test responsive</strong> — verifica il layout su viewport mobile (&lt;480px), tablet e desktop</li>
+        </ul>
+      </div>
+
+      <div id="a6-2">
+        <h2 class="doc-h2">6.2 Risultati e Report</h2>
+        <p class="doc-p">Tutti gli scenari di testing manuale hanno prodotto il comportamento atteso. I principali risultati sono:</p>
+        <div class="info-table-wrap">
+          <table class="info-table">
+            <thead><tr><th>Scenario</th><th>Esito</th><th>Note</th></tr></thead>
+            <tbody>
+              <tr><td>Registrazione / Login / Logout</td><td>✅ Superato</td><td>Cookie impostato e cancellato correttamente</td></tr>
+              <tr><td>Creazione post con immagine</td><td>✅ Superato</td><td>Compressione e anteprima funzionanti</td></tr>
+              <tr><td>Like AJAX senza reload</td><td>✅ Superato</td><td>DOM aggiornato correttamente</td></tr>
+              <tr><td>Commenti e loro eliminazione</td><td>✅ Superato</td><td>Solo l'autore vede il pulsante elimina</td></tr>
+              <tr><td>Filtro post in tempo reale</td><td>✅ Superato</td><td>Funziona per titolo, autore e tag</td></tr>
+              <tr><td>Chat multi-browser</td><td>✅ Superato</td><td>Identità utente corretta grazie al messaggio auth WS</td></tr>
+              <tr><td>Ricerca e autocomplete</td><td>✅ Superato</td><td>Debounce 300ms funzionante</td></tr>
+              <tr><td>Pagina profilo</td><td>✅ Superato</td><td>Statistiche calcolate correttamente</td></tr>
+              <tr><td>Responsive mobile</td><td>✅ Superato</td><td>Layout adattivo su tutti i breakpoint</td></tr>
+              <tr><td>Pagina 404</td><td>✅ Superato</td><td>Restituita per username inesistente</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout info">
+          <span class="callout-icon">ℹ️</span>
+          <div class="callout-body"><strong>Testing automatizzato</strong>Per un progetto didattico di questa scala, il testing manuale è sufficiente. Un'estensione futura potrebbe introdurre test unitari sulle funzioni helper con Jest e test di integrazione sulle route HTTP con Supertest.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ A7: DEPLOYMENT ══ -->
+    <div class="doc-section" id="a7">
+      <h1 class="doc-h1"><span class="section-num">07</span> Deployment e Portabilità</h1>
+
+      <div id="a7-1">
+        <h2 class="doc-h2">7.1 Guida al Deployment</h2>
+        <p class="doc-p">Il deployment per uso locale richiede solo Node.js e npm. Per un deployment su server remoto (es. VPS Linux) i passi sono:</p>
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><div class="step-body"><div class="step-title">Installa Node.js sul server</div><div class="step-desc">Versione 18+ raccomandata. Su Ubuntu: <code>curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - && sudo apt install nodejs</code></div></div></div>
+          <div class="step"><div class="step-num">2</div><div class="step-body"><div class="step-title">Copia i file del progetto</div><div class="step-desc">Carica <code>server.js</code>, <code>styles.css</code>, <code>package.json</code> e la cartella <code>views/</code> sul server tramite SCP o Git.</div></div></div>
+          <div class="step"><div class="step-num">3</div><div class="step-body"><div class="step-title">Installa le dipendenze</div><div class="step-desc"><code>npm install</code> nella cartella del progetto.</div></div></div>
+          <div class="step"><div class="step-num">4</div><div class="step-body"><div class="step-title">Avvia il server</div><div class="step-desc">Per produzione, usa un process manager come PM2: <code>npm install -g pm2 &amp;&amp; pm2 start server.js</code>. Questo garantisce il riavvio automatico in caso di crash.</div></div></div>
+          <div class="step"><div class="step-num">5</div><div class="step-body"><div class="step-title">Configura il proxy</div><div class="step-desc">Usa Nginx o Apache come reverse proxy per esporre la porta 80/443 e gestire HTTPS con un certificato Let's Encrypt.</div></div></div>
+        </div>
+        <div class="callout warn">
+          <span class="callout-icon">⚠️</span>
+          <div class="callout-body"><strong>Prima di un deployment pubblico</strong>Implementare obbligatoriamente: hashing delle password con bcrypt, HTTPS, cookie con flag HttpOnly e Secure, rate limiting sulle route di login, validazione input lato server, SameSite sui cookie.</div>
+        </div>
+      </div>
+
+      <div id="a7-2">
+        <h2 class="doc-h2">7.2 Considerazioni sulla Portabilità</h2>
+        <p class="doc-p">Il sistema è altamente portabile grazie alle scelte architetturali adottate:</p>
+        <ul class="doc-ul">
+          <li><strong>Nessun database esterno</strong> — non occorre installare MySQL, PostgreSQL o MongoDB. I file JSON vengono creati automaticamente alla prima esecuzione.</li>
+          <li><strong>Dipendenze minime</strong> — solo <code>express</code> e <code>ws</code>: due pacchetti stabili e privi di dipendenze native che richiedono compilazione.</li>
+          <li><strong>Variabile PORT</strong> — la porta è configurabile tramite variabile d'ambiente, compatibile con piattaforme PaaS come Railway, Render, Fly.io.</li>
+          <li><strong>Percorsi cross-platform</strong> — l'uso di <code>path.join</code> garantisce il funzionamento identico su Windows, macOS e Linux.</li>
+        </ul>
+        <p class="doc-p">Il principale limite alla portabilità in ambienti cloud è la persistenza tramite file JSON: le piattaforme container (come Docker su Kubernetes) non garantiscono la persistenza del filesystem tra riavvii. In quel contesto sarebbe necessario sostituire la persistenza JSON con un database esterno.</p>
+      </div>
+    </div>
+
+    <!-- ══ A8: MANUTENZIONE ══ -->
+    <div class="doc-section" id="a8">
+      <h1 class="doc-h1"><span class="section-num">08</span> Manutenzione del Software</h1>
+
+      <div id="a8-1">
+        <h2 class="doc-h2">8.1 Strategie di Manutenzione e Bug Fixing</h2>
+        <p class="doc-p">Data la struttura monolitica e la ridotta dimensione del codebase, la manutenzione è relativamente semplice. Le strategie principali sono:</p>
+
+        <h3 class="doc-h3">Localizzazione dei Bug</h3>
+        <p class="doc-p">I log del server (<code>console.error</code> nelle funzioni helper e nei catch) forniscono il primo livello di diagnostica. Ogni errore di lettura/scrittura JSON viene loggato con il percorso del file e il messaggio di errore originale. Per i bug lato client, gli strumenti di sviluppo del browser (Console e Network) sono sufficienti per diagnosticare problemi AJAX e WebSocket.</p>
+
+        <h3 class="doc-h3">Modifiche al Modello Dati</h3>
+        <p class="doc-p">Aggiungere un campo a <code>utenti.json</code> o <code>posts.json</code> richiede di: aggiornare il punto in cui l'oggetto viene costruito (es. <code>users.push({...})</code> in <code>/signup</code>), e aggiornare i template EJS che lo visualizzano. I dati preesistenti nei JSON non vengono migrati automaticamente: i campi mancanti vanno gestiti con l'operatore <code>||</code> (es. <code>user.bio || ""</code>).</p>
+
+        <h3 class="doc-h3">Aggiunta di Nuove Route</h3>
+        <p class="doc-p">Ogni nuova route va aggiunta in <code>server.js</code> seguendo il pattern esistente: validazione dell'autenticazione, lettura dati con <code>readJSONFile</code>, logica applicativa, scrittura con <code>writeJSONFile</code>, risposta JSON o render EJS. Per route che richiedono un nuovo template, aggiungere il file <code>.ejs</code> nella cartella <code>views/</code>.</p>
+
+        <h3 class="doc-h3">Aggiornamento Dipendenze</h3>
+        <p class="doc-p">Le dipendenze (<code>express</code>, <code>ws</code>) sono mature e raramente introducono breaking changes nelle patch version. Per aggiornarle: <code>npm update</code>. Verificare che il comportamento delle route non sia cambiato dopo l'aggiornamento tramite test manuale delle funzionalità principali.</p>
+
+        <h3 class="doc-h3">Backup dei Dati</h3>
+        <p class="doc-p">Poiché i dati sono nei file <code>utenti.json</code> e <code>posts.json</code>, il backup consiste semplicemente nel copiare questi due file. Per un sistema in produzione, si consiglia un backup periodico automatizzato tramite cron job.</p>
+      </div>
+    </div>
+
+    <!-- ══ A9: CONCLUSIONI ══ -->
+    <div class="doc-section" id="a9">
+      <h1 class="doc-h1"><span class="section-num">09</span> Conclusioni</h1>
+
+      <div id="a9-1">
+        <h2 class="doc-h2">9.1 Sintesi delle Proprietà Analizzate</h2>
+        <div class="info-table-wrap">
+          <table class="info-table">
+            <thead><tr><th>Proprietà</th><th>Valutazione</th><th>Punti di forza</th><th>Limitazioni</th></tr></thead>
+            <tbody>
+              <tr><td>Robustezza</td><td>Buona per uso locale</td><td>Lettura difensiva JSON, validazione autorizzazioni, sanitizzazione XSS</td><td>Nessuna gestione concorrenza, password in chiaro</td></tr>
+              <tr><td>Usabilità</td><td>Alta</td><td>Feedback AJAX immediato, filtro real-time, design responsive, indicatori chat</td><td>Nessuna paginazione, nessuna notifica push</td></tr>
+              <tr><td>Portabilità</td><td>Alta per uso locale/VPS</td><td>Zero dipendenze native, PORT configurabile, percorsi cross-platform</td><td>File JSON non portabili su container stateless</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="a9-2">
+        <h2 class="doc-h2">9.2 Suggerimenti Futuri per il Miglioramento</h2>
+        <ul class="doc-ul">
+          <li><strong>Sicurezza</strong> — hashing password con bcrypt, cookie HttpOnly e Secure, rate limiting sul login, validazione input lato server con una libreria come Joi</li>
+          <li><strong>Persistenza</strong> — sostituire i file JSON con SQLite (tramite <code>better-sqlite3</code>) per gestire concorrenza e query più complesse senza dipendere da un server database esterno</li>
+          <li><strong>Paginazione</strong> — caricare i post in blocchi (es. 10 per volta) con scroll infinito o paginazione classica, per scalare con molti contenuti</li>
+          <li><strong>Storico chat</strong> — persistere i messaggi in un file JSON o database con rotazione automatica degli ultimi N messaggi</li>
+          <li><strong>Sistema di notifiche</strong> — notifiche push per like e commenti ricevuti, anche quando si è su un'altra pagina</li>
+          <li><strong>Testing automatizzato</strong> — introdurre Jest per test unitari sulle funzioni helper e Supertest per test di integrazione HTTP</li>
+          <li><strong>Modifica post e profilo</strong> — permettere all'autore di modificare titolo, contenuto e tag di un post; permettere all'utente di modificare bio e avatar</li>
+        </ul>
+      </div>
+
+      <div id="a9-3">
+        <h2 class="doc-h2">9.3 Lezioni Apprese durante lo Sviluppo</h2>
+        <ul class="doc-ul">
+          <li><strong>La semplicità ha un costo nascosto</strong> — usare file JSON invece di un database è semplice da avviare, ma introduce limiti concreti (concorrenza, dimensione, query complesse) che emergono rapidamente con la crescita dei dati.</li>
+          <li><strong>Il protocollo WebSocket richiede attenzione all'identità</strong> — il cookie HTTP letto durante l'handshake WS non è sempre affidabile in ambienti multi-browser sullo stesso host. La soluzione con il messaggio <code>auth</code> dimostra come un piccolo accorgimento possa risolvere un bug difficile da riprodurre.</li>
+          <li><strong>Il CSS centralizzato paga</strong> — mantenere un unico file <code>styles.css</code> ha eliminato duplicazioni e reso coerente l'aspetto di tutte le pagine senza sforzo. Ogni modifica al tema si propaga automaticamente ovunque.</li>
+          <li><strong>AJAX per le micro-interazioni migliora drasticamente l'esperienza</strong> — anche senza un framework frontend, usare fetch per like, commenti ed eliminazioni rende l'applicazione percepita come molto più reattiva rispetto a un approccio full-page-reload.</li>
+          <li><strong>Il rendering server-side semplifica la gestione dello stato</strong> — non dover gestire lo stato dell'applicazione nel browser (come in React) riduce significativamente la complessità del codice client, anche se richiede reload della pagina per alcune operazioni.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ══ A10: APPENDICI ══ -->
+    <div class="doc-section" id="a10">
+      <h1 class="doc-h1"><span class="section-num">10</span> Appendici</h1>
+
+      <div id="a10-1">
+        <h2 class="doc-h2">10.1 Glossario</h2>
+        <div class="info-table-wrap">
+          <table class="info-table">
+            <thead><tr><th>Termine</th><th>Definizione</th></tr></thead>
+            <tbody>
+              <tr><td>Express</td><td>Framework web per Node.js che semplifica la definizione di route HTTP e middleware.</td></tr>
+              <tr><td>EJS</td><td>Embedded JavaScript — motore di template che genera HTML dinamico inserendo dati JavaScript in file .ejs con tag <code>&lt;%= %&gt;</code>.</td></tr>
+              <tr><td>WebSocket (WS)</td><td>Protocollo di comunicazione bidirezionale e persistente tra client e server su una singola connessione TCP. Usato per la chat real-time.</td></tr>
+              <tr><td>Middleware</td><td>Funzione Express eseguita tra la ricezione della richiesta e l'invio della risposta. Nel progetto, il middleware cookie popola <code>res.locals.currentUser</code>.</td></tr>
+              <tr><td>res.locals</td><td>Oggetto Express disponibile in tutti i template EJS durante il ciclo vita di una richiesta. Usato per passare <code>currentUser</code> a tutti i template senza doverlo passare esplicitamente in ogni <code>res.render()</code>.</td></tr>
+              <tr><td>AJAX</td><td>Asynchronous JavaScript and XML — tecnica per inviare richieste HTTP dal browser in background tramite la Fetch API, senza ricaricare la pagina.</td></tr>
+              <tr><td>base64</td><td>Codifica che converte dati binari (come immagini) in una stringa di testo ASCII. Permette di salvare immagini dentro file JSON.</td></tr>
+              <tr><td>JSON</td><td>JavaScript Object Notation — formato di testo per lo scambio e la persistenza dei dati. Nel progetto usato come database.</td></tr>
+              <tr><td>Cookie</td><td>Piccolo dato testuale salvato dal browser e inviato automaticamente al server ad ogni richiesta. Usato per mantenere la sessione utente.</td></tr>
+              <tr><td>SSR</td><td>Server-Side Rendering — generazione dell'HTML completo lato server prima di inviarlo al browser, al contrario di SPA dove l'HTML è generato nel browser.</td></tr>
+              <tr><td>Debounce</td><td>Tecnica che ritarda l'esecuzione di una funzione fino a che l'utente non smette di digitare per un certo intervallo. Usato nella ricerca per limitare le chiamate API.</td></tr>
+              <tr><td>XSS</td><td>Cross-Site Scripting — vulnerabilità che permette l'esecuzione di JavaScript malevolo iniettato nel DOM. Prevenuto nella chat con <code>escapeHtml()</code>.</td></tr>
+              <tr><td>Race condition</td><td>Situazione in cui il risultato dipende dall'ordine temporale di operazioni concorrenti. Possibile con le scritture sincrone su file JSON in caso di richieste simultanee.</td></tr>
+              <tr><td>Broadcast</td><td>Invio di un messaggio a tutti i client WebSocket connessi simultaneamente.</td></tr>
+              <tr><td>Toggle</td><td>Operazione che alterna tra due stati opposti. Usato per like (aggiunge/rimuove) e per l'apertura/chiusura di elementi UI.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="a10-2">
+        <h2 class="doc-h2">10.2 Riferimenti e Bibliografia</h2>
+        <ul class="doc-ul">
+          <li>Documentazione ufficiale Node.js — <code>https://nodejs.org/docs</code></li>
+          <li>Documentazione Express.js — <code>https://expressjs.com/</code></li>
+          <li>Documentazione libreria ws — <code>https://github.com/websockets/ws</code></li>
+          <li>Documentazione EJS — <code>https://ejs.co/</code></li>
+          <li>Specifiche WebSocket (RFC 6455) — <code>https://www.rfc-editor.org/rfc/rfc6455</code></li>
+          <li>MDN Web Docs — Fetch API — <code>https://developer.mozilla.org/docs/Web/API/Fetch_API</code></li>
+          <li>MDN Web Docs — Cookie — <code>https://developer.mozilla.org/docs/Web/HTTP/Cookies</code></li>
+          <li>Bootstrap 5 — <code>https://getbootstrap.com/docs/5.3/</code></li>
+        </ul>
+      </div>
+
+      <div id="a10-3">
+        <h2 class="doc-h2">10.3 Link Utili e Risorse Esterne</h2>
+        <ul class="doc-ul">
+          <li><strong>Node.js Download</strong> — <code>https://nodejs.org/en/download</code></li>
+          <li><strong>npm Registry</strong> — <code>https://www.npmjs.com</code></li>
+          <li><strong>Google Fonts</strong> — font Rajdhani, Share Tech Mono, Inter usati nell'interfaccia — <code>https://fonts.google.com</code></li>
+          <li><strong>Bootstrap CDN</strong> — <code>https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/</code></li>
+          <li><strong>PM2 Process Manager</strong> — per deployment in produzione — <code>https://pm2.keymetrics.io</code></li>
+          <li><strong>Let's Encrypt</strong> — certificati HTTPS gratuiti — <code>https://letsencrypt.org</code></li>
+          <li><strong>MDN — WebSocket API</strong> — <code>https://developer.mozilla.org/docs/Web/API/WebSocket</code></li>
+          <li><strong>better-sqlite3</strong> — alternativa SQLite per sostituire i file JSON — <code>https://github.com/WiseLibs/better-sqlite3</code></li>
+        </ul>
+      </div>
+    </div>
+
+    </div><!-- /main-inner2 -->
+  </div><!-- /main2 -->
+</div><!-- /view-arch -->
+
+<script>
+const NAV_USER = [
+  { id:'u1',  label:'1. Introduzione',         subs:[ {id:'u1-1',label:'1.1 Cos\'è Social PostIt'},{id:'u1-2',label:'1.2 Obiettivi'},{id:'u1-3',label:'1.3 Funzionalità'} ]},
+  { id:'u2',  label:'2. Avvio',                subs:[ {id:'u2-1',label:'2.1 Requisiti'},{id:'u2-2',label:'2.2 Installazione'} ]},
+  { id:'u3',  label:'3. Registrazione & Login', subs:[ {id:'u3-1',label:'3.1 Registrarsi'},{id:'u3-2',label:'3.2 Accedere'},{id:'u3-3',label:'3.3 Logout'} ]},
+  { id:'u4',  label:'4. Creare un Post',        subs:[ {id:'u4-1',label:'4.1 Form post'},{id:'u4-2',label:'4.2 Immagini'},{id:'u4-3',label:'4.3 Limiti'} ]},
+  { id:'u5',  label:'5. Home & Interazioni',    subs:[ {id:'u5-1',label:'5.1 Visualizzazione'},{id:'u5-2',label:'5.2 Like'},{id:'u5-3',label:'5.3 Commenti'} ]},
+  { id:'u6',  label:'6. Chat Live',             subs:[ {id:'u6-1',label:'6.1 Accesso'},{id:'u6-2',label:'6.2 Messaggi'},{id:'u6-3',label:'6.3 Tipi messaggio'} ]},
+  { id:'u7',  label:'7. Struttura Sito',        subs:[]},
+  { id:'u8',  label:'8. FAQ',                  subs:[]},
+  { id:'u9',  label:'9. Limitazioni',           subs:[]},
+];
+
+const NAV_ARCH = [
+  { id:'a1',  label:'1. Introduzione',          subs:[ {id:'a1-1',label:'1.1 Documentazione'},{id:'a1-2',label:'1.2 Software'} ]},
+  { id:'a2',  label:'2. Architettura',          subs:[ {id:'a2-1',label:'2.1 Descrizione'},{id:'a2-2',label:'2.2 Componenti'} ]},
+  { id:'a3',  label:'3. Analisi Priorità',      subs:[ {id:'a3-1',label:'3.1 Robustezza'},{id:'a3-2',label:'3.2 Usabilità'},{id:'a3-3',label:'3.3 Portabilità'} ]},
+  { id:'a4',  label:'4. Design',                subs:[ {id:'a4-1',label:'4.1 Principi'},{id:'a4-2',label:'4.2 Scelte Architetturali'} ]},
+  { id:'a5',  label:'5. Documentazione Codice', subs:[ {id:'a5-1',label:'5.1 Struttura Sorgente'},{id:'a5-2',label:'5.2 Metodi Principali'},{id:'a5-3',label:'5.3 Commenti'},{id:'a5-4',label:'5.4 Esempi Utilizzo'},{id:'a5-5',label:'5.5 Snippet Proprietà'} ]},
+  { id:'a6',  label:'6. Testing',               subs:[ {id:'a6-1',label:'6.1 Strategia'},{id:'a6-2',label:'6.2 Risultati'} ]},
+  { id:'a7',  label:'7. Deployment',            subs:[ {id:'a7-1',label:'7.1 Guida Deployment'},{id:'a7-2',label:'7.2 Portabilità'} ]},
+  { id:'a8',  label:'8. Manutenzione',          subs:[ {id:'a8-1',label:'8.1 Strategie'} ]},
+  { id:'a9',  label:'9. Conclusioni',           subs:[ {id:'a9-1',label:'9.1 Sintesi'},{id:'a9-2',label:'9.2 Suggerimenti'},{id:'a9-3',label:'9.3 Lezioni'} ]},
+  { id:'a10', label:'10. Appendici',            subs:[ {id:'a10-1',label:'10.1 Glossario'},{id:'a10-2',label:'10.2 Bibliografia'},{id:'a10-3',label:'10.3 Link Utili'} ]},
+];
+
+function buildNav(containerId, navData) {
+  const nav = document.getElementById(containerId);
+  if (!nav) return;
+  navData.forEach(item => {
+    const sec = document.createElement('div');
+    sec.className = 'nav-section';
+    const subsHtml = item.subs.map(s =>
+      `<a class="nav-h2" href="#${s.id}" onclick="setActive(this)">${s.label}</a>`
+    ).join('');
+    sec.innerHTML = `
+      <div class="nav-h1" onclick="toggleNavItem(this,'sub-${containerId}-${item.id}')">
+        <span>${item.label}</span><span class="arrow">▶</span>
+      </div>
+      <div class="nav-sub" id="sub-${containerId}-${item.id}">${subsHtml}</div>`;
+    nav.appendChild(sec);
+  });
+}
+buildNav('nav',  NAV_USER);
+buildNav('nav2', NAV_ARCH);
+
+function toggleNavItem(el, subId) {
+  el.classList.toggle('open');
+  const sub = document.getElementById(subId);
+  if (sub) sub.classList.toggle('open');
+}
+function setActive(el) {
+  el.closest('#nav, #nav2').querySelectorAll('.nav-h2').forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+  closeSidebar();
+}
+
+let currentView = null;
+
+function openView(type) {
+  document.getElementById('landing').style.display = 'none';
+  const userView = document.getElementById('view-user');
+  const archView = document.getElementById('view-arch');
+  if (type === 'user') {
+    userView.classList.add('active');
+    archView.classList.remove('active');
+    document.getElementById('sidebar-mode-badge').textContent = 'Guida Utente';
+    document.getElementById('sidebar-mode-badge').className = 'sidebar-mode-badge user';
+  } else {
+    archView.classList.add('active');
+    userView.classList.remove('active');
+  }
+  currentView = type;
+}
+
+function goHome() {
+  document.getElementById('landing').style.display = 'flex';
+  document.getElementById('view-user').classList.remove('active');
+  document.getElementById('view-arch').classList.remove('active');
+  closeSidebar();
+  currentView = null;
+}
+
+function switchView() {
+  if (currentView === 'user') openView('arch');
+  else if (currentView === 'arch') openView('user');
+  closeSidebar();
+}
+
+function toggleSidebar() {
+  const activeView = currentView === 'user' ? 'sidebar' : 'sidebar2';
+  const s = document.getElementById(activeView);
+  if (!s) return;
+  const isOpen = s.style.left === '0px';
+  s.style.left = isOpen ? '-290px' : '0px';
+  document.getElementById('overlayBg').classList.toggle('active', !isOpen);
+}
+
+function toggleSidebar2() {
+  const s = document.getElementById('sidebar2');
+  const isOpen = s.style.left === '0px';
+  s.style.left = isOpen ? '-290px' : '0px';
+  document.getElementById('overlayBg').classList.toggle('active', !isOpen);
+}
+
+function closeSidebar() {
+  ['sidebar','sidebar2'].forEach(id => {
+    const s = document.getElementById(id);
+    if (s) s.style.left = '-290px';
+  });
+  document.getElementById('overlayBg').classList.remove('active');
+}
+
+let searchTimeout;
+function searchDoc(q)  { runSearch(q, 'main');  }
+function searchDoc2(q) { runSearch(q, 'main2'); }
+
+function runSearch(query, mainId) {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    document.querySelectorAll('mark').forEach(m => m.replaceWith(document.createTextNode(m.textContent)));
+    if (!query.trim() || query.length < 2) return;
+    const main = document.getElementById(mainId);
+    if (!main) return;
+    hlText(main, query.trim());
+    const first = document.querySelector('mark');
+    if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 280);
+}
+
+function hlText(node, q) {
+  if (node.nodeType === 3) {
+    const idx = node.textContent.toLowerCase().indexOf(q.toLowerCase());
+    if (idx === -1) return;
+    const before = document.createTextNode(node.textContent.slice(0, idx));
+    const mark   = document.createElement('mark');
+    mark.textContent = node.textContent.slice(idx, idx + q.length);
+    const after  = document.createTextNode(node.textContent.slice(idx + q.length));
+    const p = node.parentNode;
+    p.insertBefore(before, node); p.insertBefore(mark, node); p.insertBefore(after, node); p.removeChild(node);
+  } else if (node.nodeType === 1 && !['SCRIPT','STYLE','INPUT'].includes(node.tagName)) {
+    [...node.childNodes].forEach(c => hlText(c, q));
+  }
+}
+</script>
+</body>
+</html>

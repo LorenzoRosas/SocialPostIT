@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ricerca - Social PostIt</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        .search-page {
+            width: min(1120px, calc(100% - 32px));
+            margin: 36px auto 88px;
+        }
+
+        .search-glass {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
+                linear-gradient(140deg, rgba(0, 229, 255, 0.08), rgba(255, 32, 112, 0.05) 55%, rgba(0, 255, 159, 0.04));
+            box-shadow:
+                0 24px 80px rgba(0, 0, 0, 0.32),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+        }
+
+        .search-glass::before {
+            content: "";
+            position: absolute;
+            inset: -40% auto auto -10%;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 229, 255, 0.18), transparent 68%);
+            opacity: 0.65;
+            pointer-events: none;
+            filter: blur(6px);
+        }
+
+        .search-glass::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, transparent 20%, rgba(255, 255, 255, 0.08) 45%, transparent 72%);
+            transform: translateX(-120%);
+            animation: search-sheen 10s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .search-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1.2fr) minmax(320px, 1fr);
+            gap: 28px;
+            padding: 30px;
+            border-radius: 32px;
+            animation: search-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        .search-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--cyan);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 1.4px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .search-kicker::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--cyan), var(--green));
+            box-shadow: 0 0 16px rgba(0, 229, 255, 0.45);
+        }
+
+        .search-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: clamp(2.3rem, 5vw, 4.4rem);
+            line-height: 0.92;
+            color: #f7fbff;
+            margin-bottom: 14px;
+            letter-spacing: 0.02em;
+        }
+
+        .search-title span {
+            color: var(--cyan);
+            text-shadow: 0 0 24px rgba(0, 229, 255, 0.28);
+        }
+
+        .search-subtitle {
+            max-width: 560px;
+            font-size: 15px;
+            line-height: 1.8;
+            color: rgba(200, 214, 229, 0.82);
+        }
+
+        .search-overview {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 26px;
+        }
+
+        .search-stat {
+            border-radius: 22px;
+            padding: 18px;
+            background: rgba(7, 11, 22, 0.56);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+            animation: search-rise 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        .search-stat:nth-child(2) { animation-delay: 0.08s; }
+        .search-stat:nth-child(3) { animation-delay: 0.16s; }
+
+        .search-stat-label {
+            display: block;
+            margin-bottom: 8px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 1.4px;
+            text-transform: uppercase;
+            color: rgba(200, 214, 229, 0.55);
+        }
+
+        .search-stat-value {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: clamp(1.7rem, 3vw, 2.25rem);
+            font-weight: 700;
+            color: #fff;
+            line-height: 1;
+        }
+
+        .search-stat-note {
+            margin-top: 6px;
+            font-size: 12px;
+            color: rgba(200, 214, 229, 0.56);
+        }
+
+        .search-form-card {
+            border-radius: 30px;
+            padding: 24px;
+            background: rgba(6, 9, 18, 0.72);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.26);
+            animation: search-rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.06s both;
+        }
+
+        .search-form-label {
+            display: block;
+            margin-bottom: 10px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 1.3px;
+            text-transform: uppercase;
+            color: rgba(200, 214, 229, 0.62);
+        }
+
+        .search-input-shell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 68px;
+            padding: 10px 10px 10px 18px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: linear-gradient(180deg, rgba(18, 24, 40, 0.88), rgba(9, 13, 24, 0.88));
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.05),
+                0 12px 36px rgba(0, 0, 0, 0.28);
+        }
+
+        .search-input-icon {
+            width: 44px;
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(0, 229, 255, 0.2), rgba(255, 32, 112, 0.14));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--cyan);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 15px;
+            letter-spacing: 1px;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 0;
+            border: 0;
+            background: transparent;
+            color: #f7fbff;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .search-input::placeholder {
+            color: rgba(200, 214, 229, 0.42);
+        }
+
+        .search-submit {
+            min-width: 148px;
+            padding-inline: 18px;
+            border-radius: 18px;
+            box-shadow: 0 16px 34px rgba(0, 229, 255, 0.14);
+        }
+
+        .search-form-foot {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 14px;
+            color: rgba(200, 214, 229, 0.58);
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .search-tip-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .search-tip-pill {
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.04);
+            color: rgba(200, 214, 229, 0.72);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .search-content {
+            margin-top: 24px;
+        }
+
+        .search-tab-bar {
+            display: inline-flex;
+            gap: 8px;
+            margin-bottom: 18px;
+            padding: 7px;
+            border-radius: 999px;
+            background: rgba(7, 10, 19, 0.68);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+            backdrop-filter: blur(20px);
+        }
+
+        .search-tab {
+            border: 0;
+            min-width: 148px;
+            padding: 12px 18px;
+            border-radius: 999px;
+            background: transparent;
+            color: rgba(200, 214, 229, 0.66);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            transition: transform 0.25s ease, background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .search-tab.active {
+            background: linear-gradient(135deg, rgba(0, 229, 255, 0.18), rgba(255, 32, 112, 0.16));
+            color: #fff;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.08),
+                0 18px 34px rgba(0, 229, 255, 0.14);
+        }
+
+        .search-tab:hover {
+            transform: translateY(-1px);
+            color: #fff;
+        }
+
+        .search-panel {
+            display: none;
+        }
+
+        .search-panel.active {
+            display: grid;
+            gap: 14px;
+        }
+
+        .search-card {
+            display: block;
+            position: relative;
+            overflow: hidden;
+            border-radius: 28px;
+            padding: 22px;
+            text-decoration: none;
+            color: inherit;
+            animation: search-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+            animation-delay: calc(var(--stagger, 0) * 70ms);
+            transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+        }
+
+        .search-card:hover {
+            transform: translateY(-4px) scale(1.01);
+            border-color: rgba(0, 229, 255, 0.25);
+            box-shadow:
+                0 24px 56px rgba(0, 0, 0, 0.26),
+                0 0 42px rgba(0, 229, 255, 0.12);
+        }
+
+        .search-card-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 18px;
+        }
+
+        .search-user-main {
+            display: flex;
+            align-items: flex-start;
+            gap: 18px;
+            min-width: 0;
+        }
+
+        .search-user-avatar {
+            width: 64px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border-radius: 22px;
+            background: linear-gradient(135deg, rgba(0, 229, 255, 0.95), rgba(255, 32, 112, 0.88));
+            box-shadow:
+                0 18px 36px rgba(0, 229, 255, 0.18),
+                inset 0 1px 0 rgba(255, 255, 255, 0.22);
+            color: #081018;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .search-user-copy {
+            min-width: 0;
+        }
+
+        .search-user-name {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 26px;
+            color: #fff;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .search-badge {
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--green);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .search-user-bio,
+        .search-post-excerpt {
+            color: rgba(200, 214, 229, 0.74);
+            font-size: 14px;
+            line-height: 1.75;
+            margin-bottom: 12px;
+        }
+
+        .search-micro-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .search-micro-pill {
+            padding: 9px 12px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: rgba(200, 214, 229, 0.72);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.04em;
+        }
+
+        .search-card-cta {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 112px;
+            padding: 12px 14px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+
+        .search-post-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 10px;
+        }
+
+        .search-post-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 24px;
+            color: #fff;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .search-post-author {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--cyan);
+        }
+
+        .search-post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .search-post-tag {
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(255, 32, 112, 0.09);
+            border: 1px solid rgba(255, 32, 112, 0.16);
+            color: #ff82a9;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .search-empty {
+            margin-top: 24px;
+            padding: 30px;
+            border-radius: 32px;
+            animation: search-rise 0.72s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        .search-empty-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .search-empty-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: clamp(1.8rem, 3vw, 2.8rem);
+            color: #fff;
+            line-height: 1;
+        }
+
+        .search-empty-copy {
+            max-width: 620px;
+            color: rgba(200, 214, 229, 0.72);
+            font-size: 14px;
+            line-height: 1.75;
+        }
+
+        .search-empty-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .search-empty-card {
+            border-radius: 24px;
+            padding: 20px;
+            background: rgba(8, 12, 23, 0.58);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            animation: search-rise 0.78s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        .search-empty-card:nth-child(2) { animation-delay: 0.08s; }
+        .search-empty-card:nth-child(3) { animation-delay: 0.16s; }
+
+        .search-empty-label {
+            margin-bottom: 10px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--cyan);
+        }
+
+        .search-empty-card h3 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 22px;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .search-empty-card p {
+            color: rgba(200, 214, 229, 0.7);
+            font-size: 13px;
+            line-height: 1.7;
+            margin-bottom: 0;
+        }
+
+        @keyframes search-rise {
+            from {
+                opacity: 0;
+                transform: translateY(24px) scale(0.985);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes search-sheen {
+            0%, 78%, 100% {
+                transform: translateX(-120%);
+                opacity: 0;
+            }
+            16% {
+                opacity: 1;
+            }
+            34% {
+                transform: translateX(140%);
+                opacity: 0.7;
+            }
+        }
+
+        @media (max-width: 980px) {
+            .search-hero {
+                grid-template-columns: 1fr;
+            }
+
+            .search-empty-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .search-page {
+                width: min(100% - 20px, 100%);
+            }
+
+            .search-hero,
+            .search-empty {
+                padding: 22px;
+                border-radius: 28px;
+            }
+
+            .search-overview {
+                grid-template-columns: 1fr;
+            }
+
+            .search-input-shell {
+                flex-wrap: wrap;
+                padding: 14px;
+            }
+
+            .search-submit {
+                width: 100%;
+            }
+
+            .search-form-foot,
+            .search-empty-head,
+            .search-card-row,
+            .search-post-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .search-card-cta {
+                width: 100%;
+            }
+
+            .search-tab-bar {
+                display: grid;
+                width: 100%;
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .search-tab {
+                min-width: 0;
+            }
+
+            .search-user-main {
+                flex-direction: column;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .search-glass::after,
+            .search-hero,
+            .search-form-card,
+            .search-stat,
+            .search-card,
+            .search-empty,
+            .search-empty-card {
+                animation: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cyber-orb"></div>
+    <div class="cyber-orb-2"></div>
+    <div class="cyber-orb-3"></div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Social <span>PostIt</span></a>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <a href="/" class="btn btn-cyber btn-cyber-cyan btn-sm">Home</a>
+                <% if (currentUser) { %>
+                    <a href="/profile" class="btn btn-cyber btn-cyber-cyan btn-sm">Profilo</a>
+                    <a href="/post" class="btn btn-cyber btn-cyber-green btn-sm">Nuovo Post</a>
+                    <a href="/logout" class="btn btn-cyber btn-cyber-pink btn-sm">Esci</a>
+                <% } else { %>
+                    <a href="/login" class="btn btn-cyber btn-cyber-cyan btn-sm">Accedi</a>
+                <% } %>
+            </div>
+        </div>
+    </nav>
+
+    <main class="search-page">
+        <section class="search-hero search-glass">
+            <div>
+                <h1 class="search-title">Ricerca</h1>
+
+                <div class="search-overview">
+                    <div class="search-stat">
+                        <span class="search-stat-label">Totale risultati</span>
+                        <span class="search-stat-value"><%= query && query.trim().length >= 2 ? results.total : 0 %></span>
+                        <div class="search-stat-note"></div>
+                    </div>
+                    <div class="search-stat">
+                        <span class="search-stat-label">Profili</span>
+                        <span class="search-stat-value"><%= results.users.length %></span>
+                        <div class="search-stat-note"></div>
+                    </div>
+                    <div class="search-stat">
+                        <span class="search-stat-label">Post</span>
+                        <span class="search-stat-value"><%= results.posts.length %></span>
+                        <div class="search-stat-note"></div>
+                    </div>
+                </div>
+            </div>
+
+            <form class="search-form-card" action="/search" method="GET">
+                <label class="search-form-label" for="searchQuery">Ricerca globale</label>
+                <div class="search-input-shell">
+                    <span class="search-input-icon">FIND</span>
+                    <input
+                        id="searchQuery"
+                        class="search-input"
+                        type="search"
+                        name="q"
+                        minlength="2"
+                        autocomplete="off"
+                        placeholder="Cerca per profilo, titolo, autore o tag..."
+                        value="<%= query || '' %>">
+                    <button type="submit" class="btn btn-cyber btn-cyber-cyan search-submit">Apri risultati</button>
+                </div>
+                <div class="search-form-foot">
+                    <span></span>
+                    <div class="search-tip-pills"></div>
+                </div>
+            </form>
+        </section>
+
+        <% if (!query || query.trim().length < 2) { %>
+            <section class="search-empty search-glass">
+                <div class="search-empty-head">
+                    <div>
+                        <h2 class="search-empty-title">Nessun risultato</h2>
+                        <p class="search-empty-copy"></p>
+                    </div>
+                    <a href="/" class="btn btn-cyber btn-cyber-cyan btn-sm">Torna alla Home</a>
+                </div>
+
+                <div class="search-empty-grid"></div>
+            </section>
+        <% } else if (results.total === 0) { %>
+            <section class="search-empty search-glass">
+                <div class="search-empty-head">
+                    <div>
+                        <h2 class="search-empty-title">Nessun risultato per "<%= query %>".</h2>
+                        <p class="search-empty-copy"></p>
+                    </div>
+                    <a href="/search" class="btn btn-cyber btn-cyber-cyan btn-sm">Nuova ricerca</a>
+                </div>
+
+                <div class="search-empty-grid"></div>
+            </section>
+        <% } else { %>
+            <section class="search-content">
+                <div class="search-tab-bar" role="tablist" aria-label="Risultati ricerca">
+                    <button class="search-tab active" type="button" data-tab="users">Profili <%= results.users.length %></button>
+                    <button class="search-tab" type="button" data-tab="posts">Post <%= results.posts.length %></button>
+                </div>
+
+                <div class="search-panel active" data-panel="users">
+                    <% results.users.forEach((user, index) => { %>
+                        <a class="search-card search-glass" href="/profile/<%= user.username %>" style="--stagger:<%= index %>;">
+                            <div class="search-card-row">
+                                <div class="search-user-main">
+                                    <div class="search-user-avatar"><%= user.avatar %></div>
+                                    <div class="search-user-copy">
+                                        <div class="search-user-name">
+                                            <span><%= user.username %></span>
+                                            <% if (currentUser === user.username) { %>
+                                                <span class="search-badge">Tu</span>
+                                            <% } %>
+                                        </div>
+                                        <p class="search-user-bio">
+                                            <%= user.bio || "Profilo minimale, pronto a riempirsi di nuovi post e dettagli." %>
+                                        </p>
+                                        <div class="search-micro-list">
+                                            <span class="search-micro-pill"><%= user.postCount %> post</span>
+                                            <span class="search-micro-pill">Membro dal <%= user.memberSince %></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="search-card-cta">Apri profilo</span>
+                            </div>
+                        </a>
+                    <% }) %>
+                </div>
+
+                <div class="search-panel" data-panel="posts">
+                    <% results.posts.forEach((post, index) => { %>
+                        <a class="search-card search-glass" href="/#post-<%= post.index %>" style="--stagger:<%= index %>;">
+                            <div class="search-post-header">
+                                <div>
+                                    <h3 class="search-post-title"><%= post.title %></h3>
+                                    <div class="search-post-author">di <%= post.author %></div>
+                                </div>
+                                <span class="search-card-cta">Apri post</span>
+                            </div>
+
+                            <p class="search-post-excerpt">
+                                <%= post.excerpt || "Questo post non ha ancora un'anteprima testuale disponibile." %><% if (post.excerpt && post.excerpt.length >= 120) { %>...<% } %>
+                            </p>
+
+                            <div class="search-micro-list">
+                                <span class="search-micro-pill"><%= post.likeCount %> like</span>
+                                <span class="search-micro-pill"><%= post.commentCount %> commenti</span>
+                                <% if (post.date) { %>
+                                    <span class="search-micro-pill"><%= post.date %></span>
+                                <% } %>
+                            </div>
+
+                            <% if (post.tags && post.tags.length > 0) { %>
+                                <div class="search-post-tags">
+                                    <% post.tags.forEach(tag => { %>
+                                        <span class="search-post-tag">#<%= tag %></span>
+                                    <% }) %>
+                                </div>
+                            <% } %>
+                        </a>
+                    <% }) %>
+                </div>
+            </section>
+        <% } %>
+    </main>
+
+    <script>
+        const tabs = document.querySelectorAll('[data-tab]');
+        const panels = document.querySelectorAll('[data-panel]');
+
+        function activateTab(tabName) {
+            tabs.forEach((button) => {
+                button.classList.toggle('active', button.dataset.tab === tabName);
+            });
+
+            panels.forEach((panel) => {
+                panel.classList.toggle('active', panel.dataset.panel === tabName);
+            });
+        }
+
+        tabs.forEach((button) => {
+            button.addEventListener('click', () => activateTab(button.dataset.tab));
+        });
+
+        const searchField = document.getElementById('searchQuery');
+        if (searchField && !searchField.value.trim()) {
+            searchField.focus();
+        }
+    </script>
+</body>
+</html>

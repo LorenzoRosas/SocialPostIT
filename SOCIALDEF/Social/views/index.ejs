@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social PostIt — Home</title>
+    <!-- Bootstrap CSS per layout e utility -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- Font Google: Rajdhani (titoli), Share Tech Mono (codice), Inter (testo) -->
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <!-- Foglio di stile principale condiviso -->
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        /* ═══════════════════════════════════════════════════════════
+           STILI SPECIFICI DELLA HOME PAGE
+           ═══════════════════════════════════════════════════════════ */
+
+        /* Variabili CSS (ridefinite localmente per sicurezza) */
+        :root {
+            --bg:       #06080f;
+            --bg2:      #0a0d1a;
+            --bg3:      #0e1225;
+            --cyan:     #00e5ff;
+            --pink:     #ff2070;
+            --green:    #00ff9f;
+            --text:     #c8d6e5;
+            --muted:    #566a80;
+            --border:   rgba(0, 229, 255, 0.18);
+            --glow-c:   rgba(0, 229, 255, 0.35);
+            --glow-p:   rgba(255, 32, 112, 0.35);
+        }
+        /* Reset box sizing */
+        *, *::before, *::after { box-sizing: border-box; }
+
+        /* ── LAYOUT PRINCIPALE ─────────────────────────────────────── */
+        /* Contenitore centrale con larghezza massima */
+        .content-wrap { max-width: 820px; margin: 40px auto; padding: 0 16px 80px; }
+
+        /* ── INTESTAZIONE HOME ──────────────────────────────────────── */
+        /* Blocco titolo principale */
+        .home-header { text-align: center; margin-bottom: 40px; }
+
+        /* Titolo h1 della home */
+        .home-header h1 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: clamp(28px, 5vw, 42px); font-weight: 700;
+            color: var(--text); letter-spacing: 1px;
+        }
+        /* Parte evidenziata del titolo (username o "Social") */
+        .home-header h1 span {
+            color: var(--cyan); text-shadow: 0 0 18px var(--glow-c);
+        }
+        /* Sottotitolo in monospace */
+        .home-header .subtitle {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px; color: var(--muted);
+            letter-spacing: 3px; margin-top: 4px;
+        }
+
+        /* Effetto glitch sul titolo - semplificato (solo text-shadow) */
+        @keyframes glitch {
+            0%   { text-shadow: 0 0 18px var(--glow-c); }
+            20%  { text-shadow: -2px 0 var(--pink), 2px 0 var(--cyan); }
+            22%  { text-shadow: 0 0 18px var(--glow-c); }
+            80%  { text-shadow: 0 0 18px var(--glow-c); }
+            82%  { text-shadow: 2px 0 var(--green), -2px 0 var(--pink); }
+            84%  { text-shadow: 0 0 18px var(--glow-c); }
+            100% { text-shadow: 0 0 18px var(--glow-c); }
+        }
+        /* Classe per applicare l'effetto glitch */
+        .glitch { animation: glitch 5s ease-in-out infinite; }
+
+        /* ── BARRA DI RICERCA ───────────────────────────────────────── */
+        /* Contenitore della barra di ricerca */
+        .search-bar {
+            margin-bottom: 28px;
+            position: relative; /* necessario per icona e dropdown assoluti */
+        }
+        /* Input di ricerca */
+        .search-bar input {
+            width: 100%;
+            background: rgba(10,13,26,0.9);
+            border: 1px solid rgba(0,229,255,0.2);
+            border-radius: 6px;
+            color: var(--text);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 13px;
+            padding: 10px 16px 10px 42px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        /* Focus sulla barra di ricerca */
+        .search-bar input:focus {
+            border-color: var(--cyan);
+            box-shadow: 0 0 0 3px rgba(0,229,255,0.1);
+        }
+        /* Placeholder della ricerca */
+        .search-bar input::placeholder { color: var(--muted); }
+        /* Icona di ricerca posizionata a sinistra */
+        .search-icon {
+            position: absolute; left: 14px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted); font-size: 16px;
+            pointer-events: none;
+        }
+        /* Contatore risultati posizionato a destra */
+        .search-count {
+            position: absolute; right: 14px; top: 50%;
+            transform: translateY(-50%);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px; color: var(--muted);
+        }
+
+        /* ── POST CARD ──────────────────────────────────────────────── */
+        /* Card del singolo post */
+        .post-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 24px 28px;
+            margin-bottom: 20px;
+            position: relative; overflow: hidden;
+            /* Solo transizione color/shadow, niente transform */
+            transition: border-color 0.25s, box-shadow 0.25s;
+            /* Animazione di entrata semplificata: solo fade */
+            animation: card-in 0.3s ease both;
+        }
+        /* Keyframe fade-in card */
+        @keyframes card-in {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+        /* Linea decorativa sinistra sfumata */
+        .post-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0;
+            width: 3px; height: 100%;
+            background: linear-gradient(180deg, var(--cyan), var(--pink));
+            opacity: 0.5; transition: opacity 0.25s;
+        }
+        /* Angolo decorativo in alto a destra */
+        .post-card::after {
+            content: '';
+            position: absolute; top: 0; right: 0;
+            width: 0; height: 0;
+            border-style: solid;
+            border-width: 0 22px 22px 0;
+            border-color: transparent rgba(0,229,255,0.15) transparent transparent;
+            transition: border-color 0.25s;
+        }
+        /* Hover senza translateY per alleggerire */
+        .post-card:hover {
+            border-color: rgba(0,229,255,0.35);
+            box-shadow: 0 4px 24px rgba(0,229,255,0.1);
+        }
+        /* Hover: linea sinistra più visibile */
+        .post-card:hover::before { opacity: 1; }
+        /* Hover: angolo più luminoso */
+        .post-card:hover::after  { border-color: transparent rgba(0,229,255,0.4) transparent transparent; }
+
+        /* Titolo del post */
+        .post-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 20px; font-weight: 700;
+            color: #e8f0fa; letter-spacing: 0.5px; margin-bottom: 4px;
+        }
+        /* Testo del post */
+        .post-content {
+            font-size: 14.5px; line-height: 1.75;
+            color: var(--text); margin-bottom: 12px;
+        }
+
+        /* ── IMMAGINE ALLEGATA AL POST ──────────────────────────────── */
+        /* Immagine del post, clickable per lightbox */
+        .post-image {
+            width: 100%; max-height: 340px;
+            object-fit: cover; border-radius: 4px;
+            border: 1px solid rgba(0,229,255,0.15);
+            margin-bottom: 14px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        /* Hover immagine */
+        .post-image:hover { opacity: 0.9; }
+
+        /* ── METADATA POST ──────────────────────────────────────────── */
+        /* Riga metadati (data, azioni, like) */
+        .post-meta {
+            display: flex; align-items: center;
+            gap: 12px; flex-wrap: wrap;
+        }
+        /* Badge dell'autore */
+        .author-badge {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px; padding: 3px 10px; border-radius: 3px;
+            background: rgba(0,229,255,0.1);
+            color: var(--cyan); border: 1px solid rgba(0,229,255,0.25);
+            letter-spacing: 0.5px;
+        }
+        /* Data del post */
+        .post-date {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px; color: var(--muted);
+        }
+
+        /* ── HASHTAG ────────────────────────────────────────────────── */
+        /* Contenitore tag */
+        .post-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+        /* Singolo badge tag */
+        .tag-badge {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px; padding: 2px 8px; border-radius: 20px;
+            background: rgba(255,32,112,0.08);
+            color: var(--pink); border: 1px solid rgba(255,32,112,0.2);
+            cursor: pointer; transition: all 0.15s;
+        }
+        /* Hover tag */
+        .tag-badge:hover {
+            background: rgba(255,32,112,0.18);
+            border-color: rgba(255,32,112,0.5);
+        }
+        /* Stato attivo del tag (filtro applicato) */
+        .tag-badge.active {
+            background: rgba(255,32,112,0.25);
+            border-color: var(--pink);
+            box-shadow: 0 0 8px rgba(255,32,112,0.3);
+        }
+
+        /* ── PULSANTI AZIONI POST ───────────────────────────────────── */
+        /* Contenitore azioni a destra */
+        .post-actions {
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+            margin-left: auto;
+        }
+        /* Pulsante azione generico */
+        .action-btn {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px; padding: 4px 10px; border-radius: 3px;
+            background: transparent; color: var(--muted);
+            border: 1px solid rgba(86,106,128,0.3);
+            cursor: pointer; transition: color 0.2s, border-color 0.2s, background 0.2s;
+        }
+        /* Hover azione */
+        .action-btn:hover {
+            color: var(--cyan); border-color: rgba(0,229,255,0.4);
+            background: rgba(0,229,255,0.05);
+        }
+        /* Stato liked del bottone like */
+        .like-btn.liked {
+            color: var(--pink); border-color: rgba(255,32,112,0.5);
+            background: rgba(255,32,112,0.08);
+            box-shadow: 0 0 8px rgba(255,32,112,0.2);
+        }
+        /* Animazione "pop" al click like */
+        @keyframes like-pop { 0%{transform:scale(1)} 50%{transform:scale(1.35)} 100%{transform:scale(1)} }
+        .like-pop { animation: like-pop 0.3s ease; }
+
+        /* ── SEZIONE COMMENTI ───────────────────────────────────────── */
+        /* Contenitore commenti */
+        .comments-section {
+            margin-top: 16px; padding-top: 16px;
+            border-top: 1px solid rgba(0,229,255,0.1);
+        }
+        /* Intestazione commenti */
+        .comments-header {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 12px; font-weight: 700;
+            color: var(--cyan); margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+        /* Singolo commento */
+        .comment-item {
+            background: rgba(0,229,255,0.03);
+            border: 1px solid rgba(0,229,255,0.08);
+            border-radius: 4px; padding: 8px 10px; margin-bottom: 8px;
+            font-size: 12px;
+        }
+        /* Autore del commento */
+        .comment-author {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px; color: var(--cyan); font-weight: 600;
+            margin-bottom: 2px;
+        }
+        /* Testo del commento */
+        .comment-text {
+            color: var(--text); line-height: 1.5; margin-bottom: 4px;
+        }
+        /* Metadati del commento (data e pulsante elimina) */
+        .comment-meta {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px; color: var(--muted);
+            display: flex; justify-content: space-between;
+        }
+        /* Pulsante elimina commento */
+        .comment-delete {
+            background: none; border: none; color: var(--muted);
+            font-size: 10px; cursor: pointer; padding: 0;
+            transition: color 0.2s;
+        }
+        .comment-delete:hover { color: var(--pink); }
+
+        /* Form per aggiungere commento */
+        .comment-form {
+            display: flex; gap: 6px; margin-top: 10px;
+        }
+        /* Input testo commento */
+        .comment-form input {
+            flex: 1; background: rgba(10,13,26,0.5);
+            border: 1px solid rgba(0,229,255,0.1); border-radius: 3px;
+            color: var(--text); font-size: 11px; padding: 5px 8px;
+            font-family: 'Inter', sans-serif; outline: none;
+        }
+        .comment-form input::placeholder { color: var(--muted); }
+        .comment-form input:focus {
+            border-color: rgba(0,229,255,0.3);
+        }
+        /* Bottone invio commento */
+        .comment-form button {
+            background: rgba(0,229,255,0.1);
+            border: 1px solid rgba(0,229,255,0.25);
+            color: var(--cyan); font-size: 11px;
+            padding: 5px 12px; border-radius: 3px;
+            cursor: pointer; transition: all 0.2s;
+            font-family: 'Share Tech Mono', monospace;
+        }
+        .comment-form button:hover {
+            background: rgba(0,229,255,0.15);
+            border-color: rgba(0,229,255,0.4);
+        }
+
+        /* ── STATO VUOTO ────────────────────────────────────────────── */
+        /* Messaggio quando non ci sono post */
+        .empty-state { text-align: center; padding: 80px 20px; }
+        /* Icona decorativa */
+        .empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
+        /* Testo stato vuoto */
+        .empty-state p {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 13px; color: var(--muted); letter-spacing: 1px;
+        }
+
+        /* ── TOAST NOTIFICA ─────────────────────────────────────────── */
+        /* Contenitore toast in basso a destra */
+        .toast-container {
+            position: fixed; bottom: 24px; right: 24px;
+            z-index: 9999; display: flex; flex-direction: column; gap: 8px;
+        }
+        /* Singolo toast */
+        .toast-msg {
+            background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 4px; padding: 10px 16px;
+            font-family: 'Share Tech Mono', monospace; font-size: 12px;
+            color: var(--cyan); box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            animation: toast-in 0.25s ease;
+            min-width: 200px;
+        }
+        /* Animazione entrata toast */
+        @keyframes toast-in {
+            from { opacity: 0; transform: translateX(16px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        /* ── LIGHTBOX IMMAGINE ──────────────────────────────────────── */
+        /* Overlay lightbox per visualizzare immagine ingrandita */
+        .lightbox {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.92); z-index: 9998;
+            align-items: center; justify-content: center;
+            cursor: zoom-out;
+        }
+        /* Stato aperto del lightbox */
+        .lightbox.open { display: flex; }
+        /* Immagine nel lightbox */
+        .lightbox img {
+            max-width: 90vw; max-height: 90vh;
+            border-radius: 4px; border: 1px solid var(--border);
+        }
+
+        /* ── SCROLLBAR CUSTOM ───────────────────────────────────────── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.3); border-radius: 3px; }
+
+        /* Post nascosti dal filtro ricerca */
+        .post-card.hidden { display: none; }
+    </style>
+</head>
+<body class="feed-page">
+    <!-- Aloni decorativi CSS (sfondo leggero, nessun canvas) -->
+    <div class="cyber-orb"></div>
+    <div class="cyber-orb-2"></div>
+    <div class="cyber-orb-3"></div>
+
+    <!-- ══ NAVBAR ════════════════════════════════════════════════════════ -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <!-- Logo del sito -->
+            <a class="navbar-brand" href="/">Social <span>PostIt</span></a>
+            <!-- Link di navigazione -->
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <% if (currentUser) { %>
+                    <!-- Utente loggato: mostra username, link e pulsante logout -->
+                    <span class="nav-user-tag">> <span><%= currentUser %></span></span>
+                    <a href="/search"   class="btn btn-cyber btn-cyber-cyan btn-sm">Ricerca</a>
+                    <a href="/profile"  class="btn btn-cyber btn-cyber-cyan btn-sm">Profilo</a>
+                    <a href="/post"     class="btn btn-cyber btn-cyber-green btn-sm">Nuovo Post</a>
+                    <a href="/chat"     class="btn btn-cyber btn-cyber-green btn-sm">Chat</a>
+                    <a href="/logout"   class="btn btn-cyber btn-cyber-pink btn-sm">Esci</a>
+                <% } else { %>
+                    <!-- Ospite: mostra solo ricerca, registrazione e login -->
+                    <a href="/search"  class="btn btn-cyber btn-cyber-cyan btn-sm">Ricerca</a>
+                    <a href="/signup"  class="btn btn-cyber btn-cyber-ghost btn-sm">Registrati</a>
+                    <a href="/login"   class="btn btn-cyber btn-cyber-cyan btn-sm">Accedi</a>
+                <% } %>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ══ CONTENUTO PRINCIPALE ══════════════════════════════════════════ -->
+    <div class="content-wrap">
+
+        <!-- Card hero con titolo e panoramica del feed -->
+        <section class="feed-hero-card">
+
+            <!-- Intestazione principale -->
+            <div class="home-header">
+                <h1>
+                    <% if (currentUser) { %>
+                        <!-- Saluto personalizzato per utente loggato -->
+                        Bentornato, <span class="glitch"><%= currentUser %></span>
+                    <% } else { %>
+                        <!-- Titolo per ospiti -->
+                        <span class="glitch">Social</span> PostIt
+                    <% } %>
+                </h1>
+                <!-- Sottotitolo informativo -->
+                <div class="subtitle">
+                    <% if (currentUser) { %>
+                        FEED AGGIORNATO &mdash; <%= posts ? posts.length : 0 %> POST
+                    <% } else { %>
+                        PIATTAFORMA OPEN &mdash; ACCEDI PER POSTARE
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Griglia panoramica: statistiche del feed -->
+            <div class="feed-overview">
+                <!-- Card: numero di post -->
+                <article class="feed-overview-card">
+                    <span class="feed-overview-label">Post nel feed</span>
+                    <strong class="feed-overview-value"><%= posts ? posts.length : 0 %></strong>
+                    <p class="feed-overview-note">Aggiornamento dal JSON locale</p>
+                </article>
+                <!-- Card: modalità (live o guest) -->
+                <article class="feed-overview-card">
+                    <span class="feed-overview-label">Modalita</span>
+                    <strong class="feed-overview-value"><%= currentUser ? "Live" : "Guest" %></strong>
+                    <p class="feed-overview-note"><%= currentUser ? "Interazioni complete abilitate" : "Accedi per pubblicare e commentare" %></p>
+                </article>
+                <!-- Card: stato scoperta -->
+                <article class="feed-overview-card">
+                    <span class="feed-overview-label">Scoperta</span>
+                    <strong class="feed-overview-value"><%= posts && posts.length > 0 ? "On" : "Empty" %></strong>
+                    <p class="feed-overview-note">Ricerca, tag e accessi rapidi sempre visibili</p>
+                </article>
+            </div>
+
+            <!-- Barra di ricerca (visibile solo se ci sono post) -->
+            <% if (posts && posts.length > 0) { %>
+            <div class="search-bar feed-search-bar">
+                <!-- Icona lente -->
+                <span class="search-icon">🔍</span>
+                <!-- Input di ricerca con filtro real-time -->
+                <input type="text" id="searchInput"
+                       placeholder="Cerca per titolo, autore o #tag..."
+                       autocomplete="off">
+                <!-- Contatore risultati filtrati -->
+                <span class="search-count" id="searchCount"></span>
+                <!-- Dropdown per autocomplete API -->
+                <div id="searchResults" class="search-results-dropdown"></div>
+            </div>
+            <% } %>
+
+        </section>
+        <!-- Fine feed-hero-card -->
+
+        <!-- ══ LISTA POST ════════════════════════════════════════════════ -->
+        <% if (posts && posts.length > 0) { %>
+            <%
+                // Calcola l'indice reale di ogni post (basato sull'array originale)
+                // e inverte l'ordine per mostrare i più recenti per primi
+                const reversed = posts.slice().map((p, i) => ({ ...p, realIndex: i })).reverse();
+            %>
+            <% reversed.forEach((post, loopIdx) => { %>
+                <%
+                    // Controlla se l'utente corrente ha messo like a questo post
+                    const liked = currentUser && post.likes && post.likes.includes(currentUser);
+                    // Conta i like del post
+                    const likeCount = post.likes ? post.likes.length : 0;
+                %>
+                <!-- Singola card del post con attributi data per il filtro JS -->
+                <div class="post-card"
+                     id="post-<%= post.realIndex %>"
+                     data-post-index="<%= post.realIndex %>"
+                     data-title="<%= (post.title || '').toLowerCase() %>"
+                     data-author="<%= (post.author || '').toLowerCase() %>"
+                     data-tags="<%= (post.tags || []).join(' ').toLowerCase() %>"
+                     style="animation-delay: <%= loopIdx * 0.06 %>s">
+
+                    <!-- Intestazione: titolo e autore -->
+                    <div class="d-flex justify-content-between align-items-start mb-2 gap-2 flex-wrap">
+                        <!-- Titolo del post -->
+                        <div class="post-title"><%= post.title || "Senza titolo" %></div>
+                        <!-- Badge autore (cliccabile per andare al profilo) -->
+                        <% if (post.author) { %>
+                            <a href="/profile/<%= post.author %>" style="text-decoration: none;">
+                                <span class="author-badge"><%= post.author %></span>
+                            </a>
+                        <% } %>
+                    </div>
+
+                    <!-- Hashtag del post (cliccabili per filtrare) -->
+                    <% if (post.tags && post.tags.length > 0) { %>
+                        <div class="post-tags">
+                            <% post.tags.forEach(tag => { %>
+                                <span class="tag-badge" data-tag="<%= tag.toLowerCase() %>">#<%= tag %></span>
+                            <% }) %>
+                        </div>
+                    <% } %>
+
+                    <!-- Contenuto testuale del post -->
+                    <p class="post-content"><%= post.content || "" %></p>
+
+                    <!-- Immagine allegata (se presente) -->
+                    <% if (post.image) { %>
+                        <img src="<%= post.image %>"
+                             alt="Immagine del post"
+                             class="post-image"
+                             onclick="openLightbox(this.src)">
+                    <% } %>
+
+                    <!-- Metadati: data + pulsanti azione -->
+                    <div class="post-meta">
+                        <!-- Data di pubblicazione -->
+                        <% if (post.date) { %>
+                            <span class="post-date">📅 <%= post.date %></span>
+                        <% } %>
+                        <!-- Azioni (like, commenti, elimina) -->
+                        <div class="post-actions">
+                            <!-- Pulsante like: solo per utenti loggati -->
+                            <% if (currentUser) { %>
+                                <button class="action-btn like-btn <%= liked ? 'liked' : '' %>"
+                                        data-index="<%= post.realIndex %>"
+                                        onclick="toggleLike(this)">
+                                    ♥ <span class="like-count"><%= likeCount %></span>
+                                </button>
+                            <% } else if (likeCount > 0) { %>
+                                <!-- Mostra il contatore like anche per ospiti -->
+                                <span class="action-btn" style="cursor:default;">
+                                    ♥ <span class="like-count"><%= likeCount %></span>
+                                </span>
+                            <% } %>
+
+                            <!-- Contatore commenti (solo per loggati) -->
+                            <% if (currentUser) { %>
+                                <span class="action-btn" style="cursor:default;">
+                                    💬 <span class="comment-count"><%= post.comments ? post.comments.length : 0 %></span>
+                                </span>
+                                <!-- Pulsante elimina: visibile solo all'autore -->
+                                <% if (currentUser === post.author) { %>
+                                    <button class="action-btn btn-cyber btn-cyber-pink" onclick="deletePost('<%= post.realIndex %>')">
+                                        🗑 Elimina
+                                    </button>
+                                <% } %>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <!-- Sezione commenti (visibile solo per utenti loggati) -->
+                    <% if (currentUser) { %>
+                        <div class="comments-section">
+                            <!-- Lista commenti esistenti -->
+                            <% if (post.comments && post.comments.length > 0) { %>
+                                <div class="comments-header">💬 COMMENTI (<%= post.comments.length %>)</div>
+                                <% post.comments.forEach((comment, commentIdx) => { %>
+                                    <div class="comment-item">
+                                        <!-- Autore del commento -->
+                                        <div class="comment-author"><%= comment.author %></div>
+                                        <!-- Testo del commento -->
+                                        <div class="comment-text"><%= comment.text %></div>
+                                        <!-- Data e pulsante elimina -->
+                                        <div class="comment-meta">
+                                            <span><%= comment.date %></span>
+                                            <% if (currentUser === comment.author) { %>
+                                                <button class="comment-delete"
+                                                        onclick="deleteComment(<%= post.realIndex %>, <%= commentIdx %>)">Elimina</button>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            <% } %>
+
+                            <!-- Form per aggiungere nuovo commento -->
+                            <form class="comment-form" onsubmit="submitComment(event, '<%= post.realIndex %>')">
+                                <input type="text" class="comment-input" placeholder="Aggiungi un commento..." required>
+                                <button type="submit">Invia</button>
+                            </form>
+                        </div>
+                    <% } %>
+                </div>
+                <!-- Fine post-card -->
+            <% }) %>
+        <% } else { %>
+            <!-- Stato vuoto: nessun post nel feed -->
+            <div class="empty-state">
+                <div class="icon">📭</div>
+                <p>NESSUN POST TROVATO</p>
+                <% if (currentUser) { %>
+                    <a href="/post" class="btn btn-cyber btn-cyber-cyan mt-3">Crea il primo post</a>
+                <% } else { %>
+                    <p class="mt-2">Accedi per pubblicare il primo contenuto</p>
+                <% } %>
+            </div>
+        <% } %>
+    </div>
+    <!-- Fine content-wrap -->
+
+    <!-- Lightbox per visualizzare immagini ingrandite -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+        <img id="lightbox-img" src="" alt="Immagine ingrandita">
+    </div>
+
+    <!-- Contenitore toast notifiche -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Bootstrap JS (per componenti bootstrap se usati) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        /* ══════════════════════════════════════════════════════════════
+           JAVASCRIPT DELLA HOME PAGE
+           ══════════════════════════════════════════════════════════════ */
+
+        /* ── SISTEMA LIKE ─────────────────────────────────────────────
+           Gestisce il toggle like tramite fetch AJAX             */
+        function toggleLike(btn) {
+            // Recupera l'indice del post dal data attribute
+            const index = btn.dataset.index;
+            // Invia la richiesta POST alla route /like
+            fetch('/like', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body:    `postIndex=${index}`
+            })
+            .then(r => r.json())
+            .then(data => {
+                // Se c'è un errore, non fare niente
+                if (data.error) return;
+                // Aggiorna il contatore like
+                const countEl = btn.querySelector('.like-count');
+                countEl.textContent = data.likes;
+                // Aggiorna la classe "liked"
+                btn.classList.toggle('liked', data.liked);
+                // Animazione pop sul pulsante
+                btn.classList.add('like-pop');
+                btn.addEventListener('animationend', () => btn.classList.remove('like-pop'), { once: true });
+                // Mostra toast di conferma
+                showToast(data.liked ? '♥ Post apprezzato!' : '♡ Like rimosso');
+            })
+            .catch(() => showToast('Errore nel like'));
+        }
+
+        /* ── ELIMINA POST ─────────────────────────────────────────────
+           Richiede conferma e poi elimina il post via fetch       */
+        function deletePost(postIndex) {
+            // Chiede conferma all'utente
+            if (!confirm('Eliminare questo post?')) return;
+            // Invia la richiesta di eliminazione
+            fetch(`/delete-post/${postIndex}`, { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        // Rimuove la card dal DOM senza ricaricare
+                        const card = document.getElementById(`post-${postIndex}`);
+                        if (card) card.remove();
+                        showToast('Post eliminato');
+                    } else {
+                        showToast('Errore: ' + (data.error || 'impossibile eliminare'));
+                    }
+                })
+                .catch(() => showToast('Errore di rete'));
+        }
+
+        /* ── FILTRO POST (RICERCA LOCALE) ─────────────────────────────
+           Filtra le card visibili in base all'input di ricerca    */
+        const searchInput = document.getElementById('searchInput');
+        const searchCount = document.getElementById('searchCount');
+        // Seleziona tutte le card post presenti nel DOM
+        const cards       = document.querySelectorAll('.post-card');
+
+        if (searchInput) {
+            // Ascolta l'input e filtra i post in tempo reale
+            searchInput.addEventListener('input', filterPosts);
+            // Con Enter: naviga alla pagina di ricerca completa
+            searchInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    const query = searchInput.value.trim();
+                    if (query.length >= 2) {
+                        window.location.href = `/search?q=${encodeURIComponent(query)}`;
+                    }
+                }
+            });
+        }
+
+        /* Filtra i post cliccando su un tag */
+        document.querySelectorAll('.tag-badge').forEach(badge => {
+            badge.addEventListener('click', () => {
+                const tag = badge.dataset.tag;
+                // Toggle: se già selezionato rimuove, altrimenti imposta
+                if (searchInput.value.trim() === `#${tag}`) {
+                    searchInput.value = '';
+                } else {
+                    searchInput.value = `#${tag}`;
+                }
+                filterPosts();
+            });
+        });
+
+        /* Funzione di filtro: mostra/nasconde card in base alla query */
+        function filterPosts() {
+            const q = (searchInput ? searchInput.value.trim().toLowerCase() : '');
+            let visible = 0;
+
+            cards.forEach(card => {
+                if (!q) {
+                    // Nessuna ricerca: mostra tutte le card
+                    card.classList.remove('hidden');
+                    visible++;
+                    return;
+                }
+                // Rimuove il # per confrontare tag
+                const query    = q.startsWith('#') ? q.slice(1) : q;
+                // Controlla se la query corrisponde a titolo, autore o tag
+                const inTitle  = card.dataset.title.includes(query);
+                const inAuthor = card.dataset.author.includes(query);
+                const inTags   = card.dataset.tags.includes(query);
+                const match    = inTitle || inAuthor || inTags;
+                // Mostra o nasconde la card
+                card.classList.toggle('hidden', !match);
+                if (match) visible++;
+            });
+
+            // Aggiorna il contatore risultati
+            if (searchCount) {
+                searchCount.textContent = q ? `${visible}/${cards.length}` : '';
+            }
+
+            // Evidenzia il tag attivo nella lista tag
+            document.querySelectorAll('.tag-badge').forEach(b => {
+                const isActive = q === `#${b.dataset.tag}`;
+                b.classList.toggle('active', isActive);
+            });
+        }
+
+        /* ── AUTOCOMPLETE RICERCA API ─────────────────────────────────
+           Mostra un dropdown con risultati di profili e post      */
+        const searchResultsDiv = document.getElementById('searchResults');
+        // Timer per il debounce delle richieste API
+        let searchTimeout;
+
+        if (searchInput) {
+            // Ascolta l'input per la ricerca API (con debounce 300ms)
+            searchInput.addEventListener('input', () => {
+                clearTimeout(searchTimeout);
+                const query = searchInput.value.trim();
+
+                // Nasconde il dropdown se la query è troppo corta
+                if (query.length < 2) {
+                    searchResultsDiv.style.display = 'none';
+                    return;
+                }
+
+                // Ritarda la ricerca per evitare troppe richieste
+                searchTimeout = setTimeout(() => {
+                    fetch(`/api/search?q=${encodeURIComponent(query)}`)
+                        .then(r => r.json())
+                        .then(data => {
+                            // Nasconde se nessun risultato
+                            if (!data.results || data.results.length === 0) {
+                                searchResultsDiv.style.display = 'none';
+                                return;
+                            }
+
+                            // Costruisce l'HTML del dropdown
+                            let html = '';
+                            data.results.forEach(result => {
+                                if (result.type === 'user') {
+                                    // Risultato utente: link al profilo
+                                    html += `<div class="search-result-item" onclick="window.location.href='/profile/${result.name}'">
+                                       <span style="color:var(--cyan);">[USER]</span> ${result.name}
+                                    </div>`;
+                                } else if (result.type === 'post') {
+                                    // Risultato post: scroll al post o link alla home con ancora
+                                    html += `<div class="search-result-item" onclick="const postEl=document.getElementById('post-${result.index}'); if(postEl){ postEl.scrollIntoView({behavior:'smooth'}); } else { window.location.href='/#post-${result.index}'; }">
+                                       <span style="color:var(--pink);">[POST]</span> ${result.title}
+                                    </div>`;
+                                }
+                            });
+
+                            // Aggiorna il dropdown e lo mostra
+                            searchResultsDiv.innerHTML = html;
+                            searchResultsDiv.style.display = 'block';
+                        })
+                        .catch(() => {
+                            // Nasconde il dropdown in caso di errore
+                            searchResultsDiv.style.display = 'none';
+                        });
+                }, 300);
+            });
+
+            // Nasconde il dropdown quando l'input perde il focus
+            searchInput.addEventListener('blur', () => {
+                setTimeout(() => {
+                    searchResultsDiv.style.display = 'none';
+                }, 200);
+            });
+        }
+
+        /* ── LIGHTBOX IMMAGINE ────────────────────────────────────────
+           Mostra l'immagine ingrandita in overlay                 */
+        function openLightbox(src) {
+            // Imposta l'src e apre il lightbox
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox').classList.add('open');
+        }
+        function closeLightbox() {
+            // Chiude il lightbox
+            document.getElementById('lightbox').classList.remove('open');
+        }
+        // Chiude il lightbox premendo ESC
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeLightbox();
+        });
+
+        /* ── COMMENTI ─────────────────────────────────────────────────
+           Invia e cancella commenti via form nascosto / fetch      */
+        function submitComment(event, postIndex) {
+            event.preventDefault();
+            const form  = event.target;
+            const input = form.querySelector('.comment-input');
+            const text  = input.value.trim();
+            // Non invia se il testo è vuoto
+            if (!text) return;
+
+            // Crea un form nascosto e lo invia (compatibilità senza JS avanzato)
+            const hiddenForm = document.createElement('form');
+            hiddenForm.method = 'POST';
+            hiddenForm.action = `/comment/${postIndex}`;
+            const textInput = document.createElement('input');
+            textInput.type  = 'hidden';
+            textInput.name  = 'text';
+            textInput.value = text;
+            hiddenForm.appendChild(textInput);
+            document.body.appendChild(hiddenForm);
+            hiddenForm.submit();
+        }
+
+        /* Elimina un commento specifico via fetch */
+        function deleteComment(postIndex, commentIndex) {
+            if (!confirm('Elimina questo commento?')) return;
+            fetch(`/delete-comment/${postIndex}/${commentIndex}`, { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        // Ricarica la pagina per aggiornare i commenti
+                        location.reload();
+                        showToast('Commento eliminato');
+                    }
+                })
+                .catch(() => showToast('Errore nella cancellazione'));
+        }
+
+        /* ── TOAST NOTIFICHE ──────────────────────────────────────────
+           Mostra notifiche temporanee in basso a destra           */
+        function showToast(msg, duration = 2500) {
+            const container = document.getElementById('toastContainer');
+            const el        = document.createElement('div');
+            el.className    = 'toast-msg';
+            el.textContent  = msg;
+            // Aggiunge al container
+            container.appendChild(el);
+            // Rimuove automaticamente dopo il timeout
+            setTimeout(() => el.remove(), duration);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social PostIt - Chat Live</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- Font Google -->
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Foglio di stile principale -->
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="chat-page">
+    <!-- Aloni decorativi CSS (sfondo leggero unificato) -->
+    <div class="cyber-orb"></div>
+    <div class="cyber-orb-2"></div>
+    <div class="cyber-orb-3"></div>
+
+    <!-- ══ NAVBAR ════════════════════════════════════════════════════════════ -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <!-- Logo -->
+            <a class="navbar-brand" href="/">Social <span>PostIt</span></a>
+            <!-- Link di navigazione -->
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <% if (currentUser) { %>
+                    <!-- Chip con username corrente -->
+                    <span class="chat-user-chip"><%= currentUser %></span>
+                    <!-- Link alla home -->
+                    <a href="/" class="btn btn-cyber btn-cyber-cyan btn-sm">Home</a>
+                    <!-- Link al profilo -->
+                    <a href="/profile" class="btn btn-cyber btn-cyber-cyan btn-sm">Profilo</a>
+                    <!-- Link alla creazione post -->
+                    <a href="/post" class="btn btn-cyber btn-cyber-green btn-sm">Nuovo Post</a>
+                    <!-- Pulsante logout -->
+                    <a href="/logout" class="btn btn-cyber btn-cyber-pink btn-sm">Esci</a>
+                <% } else { %>
+                    <!-- Solo il link accedi per ospiti -->
+                    <a href="/login" class="btn btn-cyber btn-cyber-cyan btn-sm">Accedi</a>
+                <% } %>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ══ CONTENUTO PRINCIPALE ══════════════════════════════════════════════ -->
+    <main class="chat-shell">
+
+        <!-- Sezione hero: titolo e contatore utenti online -->
+        <section class="chat-hero glass-panel">
+            <div>
+                <!-- Titolo della pagina -->
+                <h1 class="chat-title-main">Chat Live</h1>
+            </div>
+            <!-- Card con il numero di utenti online (aggiornato via WebSocket) -->
+            <div class="chat-hero-stat" id="onlineCount">
+                <span class="chat-hero-stat-label">Utenti online</span>
+                <strong class="chat-hero-stat-value" id="onlineNum">1</strong>
+                <span class="chat-hero-stat-note"></span>
+            </div>
+        </section>
+
+        <!-- Sezione stanza chat -->
+        <section class="chat-room glass-panel">
+            <!-- Intestazione: badge e indicatore di connessione -->
+            <div class="chat-room-top">
+                <!-- Badge tipo di connessione -->
+                <div class="chat-room-badge">Realtime WebSocket</div>
+                <!-- Stato connessione (aggiornato da JS) -->
+                <div id="conn-status" class="chat-conn-status disconnected">● DISCONNESSO</div>
+            </div>
+
+            <!-- Area messaggi (scrollabile) -->
+            <div id="messages" class="chat-messages">
+                <!-- Messaggio iniziale di caricamento -->
+                <div class="message system-message">
+                    <div class="message-content">Connessione al server in corso...</div>
+                </div>
+            </div>
+
+            <!-- Indicatore "sta scrivendo..." -->
+            <div id="typing-indicator" class="chat-typing"></div>
+
+            <!-- Barra emoji veloci -->
+            <div class="emoji-bar chat-emoji-bar d-flex flex-wrap" id="emojiBar"></div>
+
+            <!-- Form di invio messaggio -->
+            <form id="messageForm" class="chat-form">
+                <div class="input-row chat-input-row d-flex">
+                    <!-- Input testo messaggio -->
+                    <input type="text" id="messageInput"
+                           placeholder="Scrivi un messaggio... (Invio per inviare)"
+                           autocomplete="off" maxlength="500">
+                    <!-- Pulsante invio (disabilitato finché non connesso) -->
+                    <button type="submit" id="sendBtn" disabled>Invia</button>
+                </div>
+            </form>
+        </section>
+
+    </main>
+
+    <script>
+        /* ══════════════════════════════════════════════════════════════════════
+           JAVASCRIPT DELLA CHAT
+           ══════════════════════════════════════════════════════════════════════ */
+
+        /* ── RIFERIMENTI DOM ──────────────────────────────────────────────────
+           Seleziona gli elementi HTML principali della chat                    */
+        const messagesContainer = document.getElementById('messages');     // Area messaggi
+        const messageForm       = document.getElementById('messageForm');  // Form invio
+        const messageInput      = document.getElementById('messageInput'); // Input testo
+        const sendBtn           = document.getElementById('sendBtn');      // Pulsante invio
+        const connStatus        = document.getElementById('conn-status'); // Stato connessione
+        const typingIndicator   = document.getElementById('typing-indicator'); // "sta scrivendo"
+        const onlineNum         = document.getElementById('onlineNum');    // Contatore online
+
+        /* ── USERNAME CORRENTE ────────────────────────────────────────────────
+           Letto dal template EJS al momento del caricamento della pagina.
+           Questo valore è affidabile perché corrisponde al cookie HTTP letto
+           dal server al momento della renderizzazione di questa pagina.       */
+        const currentUser = '<%= currentUser %>';
+
+        /* ── CONNESSIONE WEBSOCKET ────────────────────────────────────────────
+           Usa WSS per HTTPS, WS per HTTP (localhost usa WS)                   */
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const socket     = new WebSocket(`${wsProtocol}//${window.location.host}`);
+
+        /* ── TIMER DIGITAZIONE ────────────────────────────────────────────────
+           Tiene traccia dei timeout per nascondere l'indicatore "sta scrivendo" */
+        const typingTimers = {};
+
+        /* ── EVENTO: CONNESSIONE APERTA ───────────────────────────────────────
+           Eseguito quando la connessione WebSocket è stabilita               */
+        socket.onopen = function() {
+            console.log('Connesso al server WebSocket');
+
+            // Aggiorna l'indicatore di stato nella UI
+            connStatus.textContent = '● CONNESSO';
+            connStatus.className   = 'chat-conn-status connected';
+
+            // Abilita il pulsante di invio
+            sendBtn.disabled = false;
+
+            // Aggiunge un messaggio di sistema locale (non inviato al server)
+            addSystemMessage('Connesso alla chat live');
+
+            // ── FIX BUG SESSIONE ──────────────────────────────────────────────
+            // Invia immediatamente l'username al server tramite un messaggio 'auth'.
+            // Questo è necessario perché il server non può fidarsi del cookie WS
+            // in caso di più browser sullo stesso host: il cookie potrebbe essere
+            // quello di un altro utente che ha fatto login per ultimo.
+            // Il server sovrascriverà l'username ricavato dal cookie handshake
+            // con questo valore, che è quello CORRETTO per questa sessione.
+            socket.send(JSON.stringify({ type: 'auth', username: currentUser }));
+        };
+
+        /* ── EVENTO: MESSAGGIO RICEVUTO ───────────────────────────────────────
+           Gestisce tutti i messaggi in arrivo dal server                      */
+        socket.onmessage = function(event) {
+            try {
+                // Converte la stringa JSON in oggetto
+                const data = JSON.parse(event.data);
+
+                // Gestisce i vari tipi di messaggio
+                if (data.type === 'chat' || data.type === 'system') {
+                    // Messaggio chat o di sistema: visualizza nella chat
+                    displayMessage(data);
+                    // Scrolla automaticamente all'ultimo messaggio
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                } else if (data.type === 'typing') {
+                    // Un altro utente sta scrivendo: mostra l'indicatore
+                    showTyping(data.username);
+                } else if (data.type === 'stop_typing') {
+                    // Un altro utente ha smesso: nasconde l'indicatore
+                    hideTyping(data.username);
+                } else if (data.type === 'online_count') {
+                    // Aggiorna il contatore utenti online
+                    onlineNum.textContent = data.count;
+                }
+            } catch (error) {
+                // Logga eventuali errori di parsing
+                console.error('Errore nel parsing del messaggio:', error);
+            }
+        };
+
+        /* ── EVENTO: CONNESSIONE CHIUSA ───────────────────────────────────────
+           Eseguito quando la connessione WebSocket viene chiusa               */
+        socket.onclose = function() {
+            console.log('Disconnesso dal server WebSocket');
+            // Aggiorna lo stato nella UI
+            connStatus.textContent = '● DISCONNESSO';
+            connStatus.className   = 'chat-conn-status disconnected';
+            // Disabilita il pulsante di invio
+            sendBtn.disabled = true;
+            // Notifica l'utente nella chat
+            addSystemMessage('Disconnesso dalla chat. Ricarica la pagina per riconnetterti.');
+        };
+
+        /* ── EVENTO: ERRORE WEBSOCKET ─────────────────────────────────────────
+           Gestisce gli errori di connessione                                  */
+        socket.onerror = function(error) {
+            console.error('Errore WebSocket:', error);
+            addSystemMessage('Errore di connessione. Ricarica la pagina.');
+        };
+
+        /* ── INVIO MESSAGGIO (form submit) ───────────────────────────────────
+           Invia il messaggio al server tramite WebSocket                      */
+        messageForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // Previene il comportamento default del form
+            const msg = messageInput.value.trim();
+            // Invia solo se c'è testo e la connessione è aperta
+            if (msg && socket.readyState === WebSocket.OPEN) {
+                // Invia il messaggio al server
+                socket.send(JSON.stringify({ type: 'chat', message: msg }));
+                // Svuota l'input
+                messageInput.value = '';
+                // Segnala al server che ha smesso di scrivere
+                socket.send(JSON.stringify({ type: 'stop_typing' }));
+            }
+        });
+
+        /* ── INVIO CON TASTO INVIO ────────────────────────────────────────────
+           Permette di inviare il messaggio premendo Enter (senza Shift)       */
+        messageInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                // Simula il submit del form
+                messageForm.dispatchEvent(new Event('submit'));
+            }
+        });
+
+        /* ── INDICATORE DIGITAZIONE ───────────────────────────────────────────
+           Invia il segnale "sta scrivendo" mentre l'utente digita             */
+        let typingTimeout;
+        messageInput.addEventListener('input', function() {
+            // Non invia se non connesso
+            if (socket.readyState !== WebSocket.OPEN) return;
+            // Segnala che sta scrivendo
+            socket.send(JSON.stringify({ type: 'typing' }));
+            // Cancella il timeout precedente
+            clearTimeout(typingTimeout);
+            // Dopo 2 secondi di inattività, segnala che ha smesso
+            typingTimeout = setTimeout(() => {
+                socket.send(JSON.stringify({ type: 'stop_typing' }));
+            }, 2000);
+        });
+
+        /* ── VISUALIZZAZIONE MESSAGGIO ────────────────────────────────────────
+           Crea e aggiunge un elemento messaggio all'area chat                 */
+        function displayMessage(data) {
+            const div = document.createElement('div');
+
+            if (data.type === 'system') {
+                // Messaggio di sistema (entrata/uscita utenti, ecc.)
+                div.className = 'message system-message';
+                div.innerHTML = `
+                    <div class="message-content">${escapeHtml(data.message)}</div>
+                    <span class="message-time">${formatTime(data.timestamp)}</span>
+                `;
+            } else if (data.type === 'chat') {
+                // Controlla se il messaggio è dell'utente corrente
+                const isMe    = data.username === currentUser;
+                // Applica la classe corretta (mio/altro)
+                div.className = `message ${isMe ? 'my-message' : 'other-message'}`;
+                div.innerHTML = `
+                    <div class="message-header">
+                        <span class="message-username">${escapeHtml(data.username)}</span>
+                        <span class="message-time">${formatTime(data.timestamp)}</span>
+                    </div>
+                    <div class="message-content">${escapeHtml(data.message)}</div>
+                `;
+            }
+            // Aggiunge il messaggio all'area chat
+            messagesContainer.appendChild(div);
+        }
+
+        /* ── MESSAGGIO DI SISTEMA LOCALE ─────────────────────────────────────
+           Aggiunge un messaggio di sistema generato lato client               */
+        function addSystemMessage(text) {
+            const div     = document.createElement('div');
+            div.className = 'message system-message';
+            div.innerHTML = `
+                <div class="message-content">${text}</div>
+                <span class="message-time">${formatTime(new Date().toISOString())}</span>
+            `;
+            // Aggiunge all'area messaggi e scrolla in fondo
+            messagesContainer.appendChild(div);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        /* ── GESTIONE INDICATORI DIGITAZIONE ─────────────────────────────────
+           Tiene traccia di chi sta scrivendo e aggiorna la UI                 */
+
+        // Set degli utenti che stanno attualmente scrivendo
+        const whoIsTyping = new Set();
+
+        /* Aggiunge un utente all'indicatore "sta scrivendo" */
+        function showTyping(username) {
+            // Aggiunge l'username al set
+            whoIsTyping.add(username);
+            // Aggiorna la UI
+            updateTypingUI();
+            // Cancella il timeout esistente per questo utente
+            clearTimeout(typingTimers[username]);
+            // Rimuove automaticamente dopo 3 secondi senza segnali
+            typingTimers[username] = setTimeout(() => hideTyping(username), 3000);
+        }
+
+        /* Rimuove un utente dall'indicatore "sta scrivendo" */
+        function hideTyping(username) {
+            // Rimuove l'username dal set
+            whoIsTyping.delete(username);
+            // Cancella il timeout
+            clearTimeout(typingTimers[username]);
+            // Aggiorna la UI
+            updateTypingUI();
+        }
+
+        /* Aggiorna il testo dell'indicatore in base a chi sta scrivendo */
+        function updateTypingUI() {
+            const names = [...whoIsTyping];
+            if (names.length === 0) {
+                // Nessuno sta scrivendo: svuota l'indicatore
+                typingIndicator.textContent = '';
+            } else if (names.length === 1) {
+                // Un solo utente sta scrivendo
+                typingIndicator.textContent = `${names[0]} sta scrivendo...`;
+            } else {
+                // Più utenti stanno scrivendo
+                typingIndicator.textContent = `${names.join(', ')} stanno scrivendo...`;
+            }
+        }
+
+        /* ── BARRA EMOJI ──────────────────────────────────────────────────────
+           Crea i pulsanti per inserire emoji veloci nell'input                */
+
+        // Lista degli emoji disponibili
+        const QUICK_EMOJIS = ['😂', '😎', '🔥', '❤️', '👾', '🤖', '⚡', '🌐', '💀', '🚀', '✨', '😈'];
+        const emojiBar     = document.getElementById('emojiBar');
+
+        // Crea un pulsante per ogni emoji
+        QUICK_EMOJIS.forEach(emoji => {
+            const btn     = document.createElement('button');
+            btn.type      = 'button';
+            btn.className = 'emoji-btn';
+            btn.textContent = emoji;
+            btn.title       = `Inserisci ${emoji}`;
+            // Al click: inserisce l'emoji nella posizione del cursore
+            btn.addEventListener('click', () => {
+                const start = messageInput.selectionStart;
+                const end   = messageInput.selectionEnd;
+                const val   = messageInput.value;
+                // Inserisce l'emoji nel punto in cui si trova il cursore
+                messageInput.value = val.slice(0, start) + emoji + val.slice(end);
+                // Riposiziona il cursore dopo l'emoji
+                messageInput.setSelectionRange(start + emoji.length, start + emoji.length);
+                // Reimposta il focus sull'input
+                messageInput.focus();
+            });
+            emojiBar.appendChild(btn);
+        });
+
+        /* ── FORMATTAZIONE ORA ────────────────────────────────────────────────
+           Converte una stringa ISO in orario HH:MM italiano                   */
+        function formatTime(isoString) {
+            return new Date(isoString).toLocaleTimeString('it-IT', {
+                hour:   '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        /* ── ESCAPE HTML ──────────────────────────────────────────────────────
+           Previene XSS convertendo i caratteri speciali HTML                  */
+        function escapeHtml(text) {
+            const div     = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        /* ── SCROLL INIZIALE ──────────────────────────────────────────────────
+           Scrolla in fondo all'area messaggi al caricamento della pagina      */
+        window.addEventListener('load', () => {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        });
+    </script>
+</body>
+</html>

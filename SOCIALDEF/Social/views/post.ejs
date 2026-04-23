@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social PostIt - Nuovo Post</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- Font Google -->
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Foglio di stile principale (sfondo unificato) -->
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="composer-page">
+    <!-- Aloni decorativi CSS -->
+    <div class="cyber-orb"></div>
+    <div class="cyber-orb-2"></div>
+    <div class="cyber-orb-3"></div>
+
+    <!-- ══ NAVBAR ════════════════════════════════════════════════════════════ -->
+    <nav class="navbar navbar-dark">
+        <div class="container d-flex align-items-center gap-3">
+            <!-- Logo -->
+            <a class="navbar-brand" href="/">Social <span>PostIt</span></a>
+            <!-- Link di navigazione a destra -->
+            <div class="ms-auto d-flex align-items-center gap-2 flex-wrap">
+                <!-- Link alla home -->
+                <a href="/" class="btn btn-cyber btn-cyber-cyan btn-sm">Home</a>
+                <!-- Link al profilo -->
+                <a href="/profile" class="btn btn-cyber btn-cyber-cyan btn-sm">Profilo</a>
+                <!-- Link alla chat -->
+                <a href="/chat" class="btn btn-cyber btn-cyber-green btn-sm">Chat Live</a>
+                <!-- Chip con l'username corrente -->
+                <span class="composer-user-chip"><%= currentUser %></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ══ CONTENUTO PRINCIPALE ══════════════════════════════════════════════ -->
+    <main class="composer-shell">
+
+        <!-- Sezione hero: titolo + card laterale -->
+        <section class="composer-hero glass-panel">
+
+            <!-- Colonna sinistra: titolo della pagina -->
+            <div class="composer-copy">
+                <h1 class="composer-title">Nuovo Post</h1>
+            </div>
+
+            <!-- Card laterale: informazioni sulla sessione -->
+            <aside class="composer-side-card">
+                <!-- Label della card -->
+                <span class="composer-side-label">Sessione attiva</span>
+                <!-- Username dell'utente loggato -->
+                <strong class="composer-side-value"><%= currentUser %></strong>
+                <!-- Descrizione -->
+                <p class="composer-side-copy">Pubblica direttamente nel feed live della piattaforma.</p>
+            </aside>
+
+        </section>
+
+        <!-- Card principale con il form di creazione post -->
+        <section class="composer-card glass-panel">
+
+            <!-- Banner errore (visibile solo in caso di errore) -->
+            <% if (error) { %>
+                <div class="composer-error-banner"><%= error %></div>
+            <% } %>
+
+            <!-- Form di creazione post: invia a POST /post -->
+            <form id="postForm" action="/post" method="POST" class="composer-form">
+
+                <!-- Campo titolo -->
+                <div class="composer-field">
+                    <label for="title">Titolo</label>
+                    <input type="text" id="title" name="title"
+                           class="composer-input"
+                           placeholder="Titolo del post"
+                           required maxlength="120">
+                </div>
+
+                <!-- Campo contenuto con contatore caratteri -->
+                <div class="composer-field">
+                    <label for="content">Contenuto</label>
+                    <textarea id="content" name="content"
+                              class="composer-textarea"
+                              placeholder="Scrivi il tuo post..."
+                              required maxlength="2000"
+                              oninput="updateCounter(this)"></textarea>
+                    <!-- Contatore caratteri (aggiornato da JS) -->
+                    <div class="char-counter" id="charCounter">0 / 2000</div>
+                </div>
+
+                <!-- Divisore decorativo -->
+                <div class="composer-divider"></div>
+
+                <!-- Campo immagine con drag&drop e anteprima -->
+                <div class="composer-field">
+                    <label>
+                        Immagine allegata
+                        <span class="composer-helper-inline">(opzionale - max 5 MB)</span>
+                    </label>
+                    <!-- Area di upload: supporta click e drag&drop -->
+                    <div class="img-upload-area composer-upload-area"
+                         id="uploadArea"
+                         ondragover="handleDragOver(event)"
+                         ondragleave="handleDragLeave(event)"
+                         ondrop="handleDrop(event)">
+                        <!-- Input file nascosto -->
+                        <input type="file" id="imageFile"
+                               accept="image/jpeg,image/png,image/gif,image/webp"
+                               onchange="handleImageSelect(this.files[0])">
+                        <!-- Testo e icona della zona di upload -->
+                        <div class="upload-icon">MEDIA</div>
+                        <p>Clicca o trascina un'immagine qui</p>
+                        <p class="composer-upload-note">JPG · PNG · GIF · WEBP</p>
+                    </div>
+
+                    <!-- Anteprima dell'immagine (nascosta finché non caricata) -->
+                    <div class="img-preview-wrap" id="imgPreview">
+                        <img id="previewImg" src="" alt="Anteprima">
+                        <!-- Pulsante per rimuovere l'immagine -->
+                        <button type="button" class="img-remove-btn"
+                                onclick="removeImage()" title="Rimuovi immagine">×</button>
+                    </div>
+
+                    <!-- Campo hidden per il valore base64 dell'immagine -->
+                    <input type="hidden" name="image" id="imageBase64">
+                </div>
+
+                <!-- Divisore decorativo -->
+                <div class="composer-divider"></div>
+
+                <!-- Campo tag -->
+                <div class="composer-field">
+                    <label for="tags">
+                        Tag
+                        <span class="composer-helper-inline">(opzionali)</span>
+                    </label>
+                    <input type="text" id="tags" name="tags"
+                           class="composer-input"
+                           placeholder="es: tecnologia, gaming, arte">
+                    <!-- Suggerimento formato tag -->
+                    <div class="tags-hint">
+                        Separa i tag con la virgola. Il simbolo # verrà aggiunto automaticamente.
+                    </div>
+                </div>
+
+                <!-- Pulsante di pubblicazione -->
+                <button type="submit" class="composer-submit" id="publishBtn">Pubblica</button>
+
+            </form>
+        </section>
+
+    </main>
+
+    <script>
+        /* ══════════════════════════════════════════════════════════════════════
+           JAVASCRIPT DEL COMPOSER
+           ══════════════════════════════════════════════════════════════════════ */
+
+        /* ── CONTATORE CARATTERI ──────────────────────────────────────────────
+           Aggiorna il contatore in tempo reale mentre l'utente scrive         */
+        function updateCounter(el) {
+            const len     = el.value.length;
+            const max     = parseInt(el.getAttribute('maxlength'), 10);
+            const counter = document.getElementById('charCounter');
+            // Aggiorna il testo del contatore
+            counter.textContent = `${len} / ${max}`;
+            // Resetta le classi di avviso
+            counter.className   = 'char-counter';
+            // Classe "warn" quando supera il 90% del limite
+            if (len > max * 0.9) counter.classList.add('warn');
+            // Classe "limit" quando ha raggiunto il limite massimo
+            if (len >= max)      counter.classList.add('limit');
+        }
+
+        /* ── COSTANTI IMMAGINE ────────────────────────────────────────────────
+           Limiti per il caricamento e la compressione delle immagini          */
+        const MAX_BYTES = 5 * 1024 * 1024; // 5 MB massimo per l'upload
+        const MAX_PX    = 900;             // Dimensione massima in pixel dopo compressione
+        const JPEG_QUAL = 0.75;            // Qualità JPEG per la compressione (0-1)
+
+        /* ── SELEZIONE IMMAGINE ───────────────────────────────────────────────
+           Gestisce la selezione di un file immagine tramite il campo file     */
+        function handleImageSelect(file) {
+            // Nessun file selezionato: esce
+            if (!file) return;
+            // Verifica che sia un'immagine
+            if (!file.type.startsWith('image/')) {
+                alert('Seleziona un file immagine valido (JPG, PNG, GIF, WEBP).');
+                return;
+            }
+            // Verifica che non superi il limite di dimensione
+            if (file.size > MAX_BYTES) {
+                alert(`L'immagine supera il limite di 5 MB. Dimensione: ${(file.size / 1024 / 1024).toFixed(1)} MB`);
+                clearImageInput();
+                return;
+            }
+            // Legge il file come data URL (base64)
+            const reader   = new FileReader();
+            reader.onload  = e => compressAndPreview(e.target.result);
+            reader.readAsDataURL(file);
+        }
+
+        /* ── DRAG & DROP ──────────────────────────────────────────────────────
+           Gestisce il drag-over (evidenziazione zona) e il drop               */
+
+        /* Mostra evidenziazione quando si trascina sopra la zona */
+        function handleDragOver(e) {
+            e.preventDefault();
+            document.getElementById('uploadArea').classList.add('drag-over');
+        }
+
+        /* Rimuove l'evidenziazione quando si esce dalla zona */
+        function handleDragLeave() {
+            document.getElementById('uploadArea').classList.remove('drag-over');
+        }
+
+        /* Gestisce il drop dell'immagine nella zona */
+        function handleDrop(e) {
+            e.preventDefault();
+            // Rimuove l'evidenziazione
+            document.getElementById('uploadArea').classList.remove('drag-over');
+            // Prende il primo file droppato
+            const file = e.dataTransfer.files[0];
+            if (file) handleImageSelect(file);
+        }
+
+        /* ── COMPRESSIONE E ANTEPRIMA ─────────────────────────────────────────
+           Ridimensiona l'immagine se troppo grande e mostra l'anteprima       */
+        function compressAndPreview(dataUrl) {
+            const img    = new Image();
+            img.onload   = function() {
+                // Calcola le nuove dimensioni mantenendo le proporzioni
+                let w = img.width;
+                let h = img.height;
+                if (w > MAX_PX || h > MAX_PX) {
+                    if (w > h) {
+                        // Paesaggio: riduce in base alla larghezza
+                        h = Math.round(h * MAX_PX / w);
+                        w = MAX_PX;
+                    } else {
+                        // Ritratto: riduce in base all'altezza
+                        w = Math.round(w * MAX_PX / h);
+                        h = MAX_PX;
+                    }
+                }
+                // Disegna l'immagine ridimensionata su un canvas
+                const canvas = document.createElement('canvas');
+                canvas.width  = w;
+                canvas.height = h;
+                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                // Converte in JPEG base64 con qualità ridotta
+                const compressed = canvas.toDataURL('image/jpeg', JPEG_QUAL);
+
+                // Imposta il valore nel campo hidden per l'invio al server
+                document.getElementById('imageBase64').value = compressed;
+                // Mostra l'anteprima
+                document.getElementById('previewImg').src = compressed;
+                document.getElementById('imgPreview').style.display = 'block';
+                // Nasconde la zona di upload
+                document.getElementById('uploadArea').style.display = 'none';
+            };
+            img.src = dataUrl;
+        }
+
+        /* ── RIMOZIONE IMMAGINE ───────────────────────────────────────────────
+           Cancella l'immagine selezionata e ripristina la zona di upload      */
+        function removeImage() {
+            clearImageInput();
+        }
+
+        /* Azzera tutti i campi relativi all'immagine */
+        function clearImageInput() {
+            document.getElementById('imageBase64').value    = '';
+            document.getElementById('previewImg').src       = '';
+            document.getElementById('imgPreview').style.display  = 'none';
+            document.getElementById('uploadArea').style.display  = 'block';
+            document.getElementById('imageFile').value      = '';
+        }
+
+        /* ── FEEDBACK PUBBLICAZIONE ───────────────────────────────────────────
+           Disabilita il pulsante durante l'invio per evitare doppi submit     */
+        document.getElementById('postForm').addEventListener('submit', function() {
+            const btn        = document.getElementById('publishBtn');
+            // Aggiorna il testo e disabilita il pulsante
+            btn.textContent  = 'Pubblicazione in corso...';
+            btn.disabled     = true;
+            // Re-abilita dopo 5 secondi (fallback nel caso di errore)
+            setTimeout(() => {
+                btn.textContent = 'Pubblica';
+                btn.disabled    = false;
+            }, 5000);
+        });
+    </script>
+</body>
+</html>
