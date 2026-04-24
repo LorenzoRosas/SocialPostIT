@@ -1,7 +1,5 @@
 /* ════════════════════════════════════════════════════════════════════════════
    STYLES.CSS - FOGLIO DI STILE CENTRALIZZATO PER SOCIAL POSTIT
-   Contiene: temi, animazioni semplificate, componenti riutilizzabili
-   NOTA: animazioni alleggerite per migliorare le prestazioni
    ════════════════════════════════════════════════════════════════════════════ */
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -43,8 +41,6 @@
 
 /* ──────────────────────────────────────────────────────────────────────────
    SFONDO UNIFICATO PER TUTTE LE PAGINE
-   Stesso sfondo leggero usato per auth/chat/post su ogni pagina
-   (sostituisce il pesante canvas di pioggia della home)
    ────────────────────────────────────────────────────────────────────────── */
 
 /* Sfondo base con gradienti radiali leggeri - uguale per tutte le pagine */
@@ -91,9 +87,6 @@ body::after {
     pointer-events: none;
 }
 
-/* ──────────────────────────────────────────────────────────────────────────
-   ORBE DI SFONDO - ANIMATE MA SEMPLIFICATE (no scale, solo opacity)
-   ────────────────────────────────────────────────────────────────────────── */
 
 /* Alone ciano in alto a destra */
 .cyber-orb {
